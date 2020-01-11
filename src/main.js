@@ -4,5 +4,7 @@ import update from './update.js';
 // logs will still point to your original source modules
 console.log('if you have sourcemaps enabled in your devtools, click on main.js:5 -->');
 console.log('Bill\'s Push');
-
+ 
 update();
+
+// ok
