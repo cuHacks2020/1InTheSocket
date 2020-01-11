@@ -25,7 +25,7 @@ let main = (p) => {
   };
 
   p.mousePressed = () => {
-    console.log("mouse")
+    console.log("mouse");
   };
 };
 
