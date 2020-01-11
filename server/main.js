@@ -3,20 +3,13 @@ const express = require("express");
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var path = require("path");
-
 const width = 20;
 const height = 20;
-
 const blocks = [
   [
     [0, 1, 0],
     [0, 1, 0],
     [0, 1, 1]
-  ],
-  [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0]
   ],
   [
     [0, 1, 0],
@@ -31,15 +24,64 @@ const blocks = [
   [
     [1, 1, 1],
     [0, 0, 0],
+    [1, 0, 1]
+  ],
+  [
+    [1, 1, 1],
+    [0, 0, 0],
     [1, 1, 1]
   ],
   [
     [0, 1, 0],
     [1, 1, 1],
     [0, 1, 0]
+  ],
+  [
+    [1, 0, 1],
+    [0, 0, 0],
+    [1, 0, 1]
+  ],
+  [
+    [0, 0, 1],
+    [0, 1, 1],
+    [0, 1, 0]
+  ],
+  [
+    [1, 1, 0],
+    [0, 0, 0],
+    [0, 1, 0]
+  ],
+  [
+    [1, 0, 1],
+    [0, 0, 0],
+    [0, 1, 0]
+  ],
+  [
+    [1, 1, 1],
+    [0, 0, 0],
+    [0, 0, 0]
+  ],
+  [
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 1, 0]
+  ],
+  [
+    [0, 0, 0],
+    [1, 1, 0],
+    [0, 0, 0]
+  ],
+  [
+    [0, 0, 0],
+    [0, 1, 0],
+    [0, 0, 0]
+  ],
+  [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
   ]
 ];
-
 var map = generateMap();
 
 server.listen(80);
@@ -64,8 +106,6 @@ io.on("connection", function(socket) {
 
 // < ----- Map Generation ----- >
 
-
-
 function generateMap() {
   let map = new Array();
 
@@ -83,8 +123,8 @@ function generateMap() {
     while (i < width - 1) {
       if (map[j][i] == 0) {
         let block = blocks[Math.floor(Math.random() * blocks.length)];
-        let rotation = Math.floor(Math.random() * 3);
-        for (let r = 0; r < rotation; r++) block = rotateBlock(block);
+        let rotations = Math.floor(Math.random() * 3);
+        for (let r = 0; r < rotations; r++) block = rotateBlock(block);
         insertBlock(map, i, j, block);
       }
       i += 5;
