@@ -8,10 +8,14 @@ let socket = io('http://localhost');
 // logs will still point to your original source modules
 console.log('if you have sourcemaps enabled in your devtools, click on main.js:5 -->');
 
+
 const game = new Game();
 
 let main = (p) => {
   p.setup = () => {
+    // game = new Game(window.innerWidth, window.innerHeight);
+    const cur_speed = 20;
+
     p.createCanvas(window.innerWidth, window.innerHeight);
     p.background(40);
   };
@@ -22,21 +26,6 @@ let main = (p) => {
 
   p.mousePressed = () => {
     console.log("mouse")
-  };
-
-  p.keyPressed = (keyCode) => {
-    if(keyCode.key == "w") { // forward
-      socket.emit("foward")
-    }
-    if(keyCode.key == "a") { // left
-      socket.emit("left")
-    }
-    if(keyCode.key == "d") { // right
-      socket.emit("right")
-    }
-    if(keyCode.key == "s") { // backward
-      socket.emit("backward")
-    }
   };
 };
 
