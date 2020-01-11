@@ -3,6 +3,7 @@ const express = require("express");
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var path = require("path");
+var map = generateMap();
 
 server.listen(80);
 // WARNING: app.listen(80) will NOT work here!
@@ -13,14 +14,14 @@ const public = path.join(__dirname, "..", "public");
 
 app.use(express.static(public));
 
-app.get("/", function(req, res) {
-  res.sendFile(path.join(public, "index.html"));
-});
-
 io.on("connection", function(socket) {
   socket.emit("news", { hello: "world" });
-  socket.on("my other event", function(data) {
-    console.log(data);
+
+  socket.on("new user", function(data) {
+    let x = 0;
+    let y = 0;
+    generateSpawn();
+    socket.emit("map", map, x, y);
   });
 });
 
@@ -109,4 +110,15 @@ function rotateBlock(block) {
   return rotated;
 }
 
-console.log(generateMap());
+function getSpawn(map, x, y) {
+  for (let j = 0; j < height; j++) {
+    for (let i = 0; i < width; i++) {
+      if (map[j][i] === 0) {
+        y = j;
+        x = i;
+        return true;
+      }
+    }
+  }
+  return false;
+}
