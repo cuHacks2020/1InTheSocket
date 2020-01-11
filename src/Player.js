@@ -6,27 +6,22 @@ export default class Player {
   constructor() {
     this.x = 100;
     this.y = 100;
-    this.charSpeed = 5;
+    this.speed = 5;
   }
 
   draw(p) {
     if(p.keyIsDown(87)) {
-      console.log("forward")
-      this.y -= this.charSpeed;
+      this.y -= this.speed;
     }
     if(p.keyIsDown(83)) {
-      console.log("backward")
-      this.y += this.charSpeed;
+      this.y += this.speed;
     }
     if(p.keyIsDown(65)) {
-      console.log("left")
-      this.x -= this.charSpeed;;
+      this.x -= this.speed;
     }
     if(p.keyIsDown(68)) {
-      console.log("right")
-      this.x += this.charSpeed;;
+      this.x += this.speed;
     }
-    p.createCanvas(window.innerWidth,window.innerHeight);
     p.background(40);
     p.ellipse(this.x, this.y, 50);
   }

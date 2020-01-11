@@ -8,6 +8,7 @@ export default class Game {
         this.players = [new Player()]
         this.map = null;
     }
+    
     connect() {
         const socket = io();
         socket.emit('new user');
@@ -34,9 +35,6 @@ export default class Game {
     }
 
     draw(p) {
-        console.log('draw');
-        //have players be ellipses for now
-
         this.players.forEach((player) => {
             player.draw(p);
         })
