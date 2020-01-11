@@ -29,7 +29,23 @@ export default class Game {
         socket.on("map", this.recvMap);
     }
 
-
+    // Checks if there is wall between two set of points
+    // Player position and given x y
+    checkWall(playerX, playerY, X, Y) {
+        playerX = playerX / 20;
+        playerY = playerY / 20;
+        X = X / 20;
+        Y = Y / 20;
+        let angleDegrees = Math.atan2(Y - playerY, X - playerX) * 180 / Math.PI;
+        while (playerX != X && playerY != Y) {
+            playerX += Math.sin(angleDegrees);
+            playerY += Math.cos(angleDegrees);
+            if (this.map[Math.floor(playerX)][Math.floor(playerY)] == "1") {
+                return true;
+            }
+        }
+        return false;
+    }
 
     drawMap(p, windowWidth, windowHeight) {
         const pixelsPerBlock = 16;
