@@ -1,7 +1,11 @@
 import io from 'socket.io-client';
+import Player from './Player';
 
 export default class Game {
     constructor() {
+        console.log('hi');
+        this.connect();
+        this.players = [new Player()]
         this.map = null;
         this.x = null;
         this.y = null;
@@ -15,6 +19,7 @@ export default class Game {
 
         this.connect();
     }
+    
     connect() {
         const socket = io();
         socket.emit('new user');
