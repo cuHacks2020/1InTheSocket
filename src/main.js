@@ -10,24 +10,29 @@ import io from 'socket.io-client';
 // logs will still point to your original source modules
 console.log('if you have sourcemaps enabled in your devtools, click on main.js:5 -->');
 
-
-const game = new Game();
-
-let main = (p) => {
-  p.setup = () => {
-
-    p.createCanvas(window.innerWidth, window.innerHeight);
-    p.background(40);
+async function main() {
+  const game = new Game();
+  await game.init();
+  
+  let main = (p) => {
+    p.setup = () => {
+  
+      p.createCanvas(window.innerWidth, window.innerHeight);
+      p.background(40);
+    };
+  
+    p.draw = () => {
+      game.draw(p, window.innerWidth, window.innerHeight);
+    };
+  
+    p.mousePressed = () => {
+      console.log("mouse");
+    };
   };
-  p.draw = () => {
-    game.draw(p,window.innerWidth, window.innerHeight);
-  };
 
-  p.mousePressed = () => {
-    console.log("mouse");
-  };
-};
+  new p5(main);
+}
+
+main();
 
 
-
-new p5(main);

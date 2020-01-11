@@ -84,6 +84,8 @@ const blocks = [
 ];
 var map = generateMap();
 
+let players = [];
+
 server.listen(80);
 // WARNING: app.listen(80) will NOT work here!
 
@@ -94,13 +96,36 @@ const public = path.join(__dirname, "..", "public");
 app.use(express.static(public));
 
 io.on("connection", function(socket) {
-  socket.emit("news", { hello: "world" });
+  let x = 0;
+  let y = 0;
+  getSpawn(map, x, y);
+  socket.emit("map", map, x, y);
 
-  socket.on("new user", function(data) {
-    let x = 0;
-    let y = 0;
-    getSpawn(map, x, y);
-    socket.emit("map", map, x, y);
+  players.push({
+    id: socket.id,
+    x,
+    y
+  });
+
+  console.log("New connection");
+  console.log(players);
+
+  socket.on("move", (data) => {
+    const {x, y} = data;
+    const player = players.find(({id}) => id === socket.id);
+
+    if (!player) return;
+
+    player.x = x;
+    player.y = y;
+
+    socket.emit("gameData", players);
+  })
+
+  socket.on("disconnect", (data) => {
+    console.log("Disconnect");
+    players = players.filter(({id}) => id !== socket.id);
+    console.log(players);
   });
 });
 
