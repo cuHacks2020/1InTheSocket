@@ -9,7 +9,7 @@ server.listen(80);
 
 console.log("GO to http://localhost:80")
 
-const public = path.join(__dirname, '..', 'public')
+const public = path.join(__dirname, '..', 'public');
 
 app.use(express.static(public));
 
