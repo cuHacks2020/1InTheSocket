@@ -13,6 +13,8 @@ console.log('if you have sourcemaps enabled in your devtools, click on main.js:5
 
 const game = new Game();
 
+
+
 let main = (p) => {
   p.setup = () => {
 
@@ -24,8 +26,11 @@ let main = (p) => {
     game.draw(p);
   };
 
-  p.mousePressed = () => {
-    console.log("mouse");
+
+
+  p.mouseClicked = () => {
+    // game.players[0].shoot();
+    game.players[0].shoot(p);
   };
 };
 

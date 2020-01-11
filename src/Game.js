@@ -33,14 +33,16 @@ export default class Game {
         }
     }
 
+    // draw(p, windowWidth, windowHeight) {
+    //     drawMap(p, windowWidth, windowHeight);
     draw(p) {
-        console.log('draw');
+        //console.log('draw');
         //have players be ellipses for now
 
         this.players.forEach((player) => {
             player.draw(p);
         })
 
-        //drawMap()
+        //drawMap();
     }
 }
