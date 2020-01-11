@@ -41,6 +41,6 @@ export default class Game {
             player.draw(p);
         })
 
-        //drawMap();
+        //drawMap()
     }
 }
