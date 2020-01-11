@@ -3,29 +3,6 @@ const express = require("express");
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var path = require("path");
-var map = generateMap();
-
-server.listen(80);
-// WARNING: app.listen(80) will NOT work here!
-
-console.log("GO to http://localhost:80");
-
-const public = path.join(__dirname, "..", "public");
-
-app.use(express.static(public));
-
-io.on("connection", function(socket) {
-  socket.emit("news", { hello: "world" });
-
-  socket.on("new user", function(data) {
-    let x = 0;
-    let y = 0;
-    generateSpawn();
-    socket.emit("map", map, x, y);
-  });
-});
-
-// < ----- Map Generation ----- >
 
 const width = 20;
 const height = 20;
@@ -62,6 +39,32 @@ const blocks = [
     [0, 1, 0]
   ]
 ];
+
+var map = generateMap();
+
+server.listen(80);
+// WARNING: app.listen(80) will NOT work here!
+
+console.log("GO to http://localhost:80");
+
+const public = path.join(__dirname, "..", "public");
+
+app.use(express.static(public));
+
+io.on("connection", function(socket) {
+  socket.emit("news", { hello: "world" });
+
+  socket.on("new user", function(data) {
+    let x = 0;
+    let y = 0;
+    getSpawn(map, x, y);
+    socket.emit("map", map, x, y);
+  });
+});
+
+// < ----- Map Generation ----- >
+
+
 
 function generateMap() {
   let map = new Array();

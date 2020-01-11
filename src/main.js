@@ -14,9 +14,8 @@ let main = (p) => {
     p.createCanvas(window.innerWidth, window.innerHeight);
     p.background(40);
   };
-
   p.draw = () => {
-    game.draw(p);
+    game.draw(p,window.innerWidth, window.innerHeight);
   };
 
   p.mousePressed = () => {
