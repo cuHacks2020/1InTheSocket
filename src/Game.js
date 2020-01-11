@@ -1,10 +1,11 @@
 import io from 'socket.io-client';
+import Player from './Player';
 
 export default class Game {
     constructor() {
         console.log('hi');
         this.connect();
-
+        this.players = [new Player()]
         this.map = null;
     }
     connect() {
@@ -32,7 +33,19 @@ export default class Game {
         }
     }
 
+<<<<<<< HEAD
     draw(p, windowWidth, windowHeight) {
         drawMap(p, windowWidth, windowHeight);
+=======
+    draw(p) {
+        console.log('draw');
+          //have players be ellipses for now
+    
+    this.players.forEach((player) => {
+        player.draw(p);
+    })
+
+        //drawMap();
+>>>>>>> rebased movement stuff
     }
 }

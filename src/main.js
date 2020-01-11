@@ -4,10 +4,6 @@ import p5 from 'p5';
 import Game from './Game';
 import io from 'socket.io-client';
 
-let x = 100;
-let y = 100;
-let charSpeed = 5;
-
 //let socket = io('http://localhost');
 
 // even though Rollup is bundling all your files together, errors and
@@ -19,8 +15,6 @@ const game = new Game();
 
 let main = (p) => {
   p.setup = () => {
-    // game = new Game(window.innerWidth, window.innerHeight);
-    const cur_speed = 20;
 
     p.createCanvas(window.innerWidth, window.innerHeight);
     p.background(40);
