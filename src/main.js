@@ -1,8 +1,14 @@
+//<script src="/socket.io/socket.io.js"></script>
+
 import p5 from 'p5';
 import Game from './Game';
 import io from 'socket.io-client';
 
-let socket = io('http://localhost');
+let x = 100;
+let y = 100;
+let charSpeed = 5;
+
+//let socket = io('http://localhost');
 
 // even though Rollup is bundling all your files together, errors and
 // logs will still point to your original source modules
