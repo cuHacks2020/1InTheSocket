@@ -1,4 +1,4 @@
-import resolve from 'rollup-plugin-node-resolve';
+import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 
@@ -13,8 +13,11 @@ export default {
 		format: 'iife', // immediately-invoked function expression — suitable for <script> tags
 		sourcemap: true
 	},
-	plugins: [
-		resolve(), // tells Rollup how to find date-fns in node_modules
+	plugins: [ 
+		nodeResolve({
+      browser: true,
+      preferBuiltins: true
+    }),
 		commonjs(), // converts date-fns to ES modules
 		production && terser() // minify, but only in production
 	]
