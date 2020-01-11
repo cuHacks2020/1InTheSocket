@@ -23,15 +23,12 @@ export default class Game {
     connect() {
         const socket = io();
         socket.emit('new user');
-        let m;
-        let x;
-        let y;
         socket.on("map", this.recvMap);
     }
 
     // Checks if there is wall between two set of points
     // Player position and given x y
-    checkWall(playerX, playerY, X, Y) {
+    checkWallCollisionBullet(playerX, playerY, X, Y) {
         playerX = playerX / 20;
         playerY = playerY / 20;
         X = X / 20;
@@ -40,9 +37,17 @@ export default class Game {
         while (playerX != X && playerY != Y) {
             playerX += Math.sin(angleDegrees);
             playerY += Math.cos(angleDegrees);
-            if (this.map[Math.floor(playerX)][Math.floor(playerY)] == "1") {
+            if (this.map[Math.floor(playerY)][Math.floor(playerX)] == "1") {
                 return true;
             }
+        }
+        return false;
+    }
+
+    checkWallCollisionPlayer(playerX, playerY, differenceX, differenceY) {
+        if (differenceY != 0 && this.map[Math.floor((playerY + differenceY)/20)][Math.floor(playerX/20)] ||
+            differenceX != 0 && this.map[Math.floor(playerY/20)][Math.floor((playerX+differenceX)/20)]) {
+            return true;
         }
         return false;
     }
