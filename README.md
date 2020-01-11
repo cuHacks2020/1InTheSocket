@@ -5,9 +5,8 @@
 Clone this repository and install its dependencies:
 
 ```bash
-git clone https://github.com/rollup/rollup-starter-app
-cd rollup-starter-app
 npm install
+npm run dev
 ```
 
 `npm run build` builds the application to `public/bundle.js`, along with a sourcemap file for debugging.
