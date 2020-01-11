@@ -23,6 +23,23 @@ let main = (p) => {
   p.mousePressed = () => {
     console.log("mouse")
   };
+
+  p.keyPressed = (keyCode) => {
+    if(keyCode.key == "w") { // forward
+      socket.emit("foward")
+    }
+    if(keyCode.key == "a") { // left
+      socket.emit("left")
+    }
+    if(keyCode.key == "d") { // right
+      socket.emit("right")
+    }
+    if(keyCode.key == "s") { // backward
+      socket.emit("backward")
+    }
+  };
 };
+
+
 
 new p5(main);
