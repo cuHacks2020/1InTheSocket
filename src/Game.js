@@ -33,12 +33,10 @@ export default class Game {
         }
     }
 
-<<<<<<< HEAD
-    draw(p, windowWidth, windowHeight) {
-        drawMap(p, windowWidth, windowHeight);
-=======
+    // draw(p, windowWidth, windowHeight) {
+    //     drawMap(p, windowWidth, windowHeight);
     draw(p) {
-        console.log('draw');
+        //console.log('draw');
           //have players be ellipses for now
     
     this.players.forEach((player) => {
@@ -46,6 +44,5 @@ export default class Game {
     })
 
         //drawMap();
->>>>>>> rebased movement stuff
     }
 }
