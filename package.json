@@ -18,7 +18,6 @@
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "dev": "npm-run-all --parallel start watch",
-    "start": "serve public",
-    "server": "node server/main.js"
+    "start": "node server/main.js"
   }
 }
