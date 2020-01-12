@@ -23,6 +23,8 @@ export default class Game {
     })
 
     socket.on("gameData", (data) => {
+      const allowedServerDivergencePx = 50;
+
       const receivedIds = data.map(({ id }) => id);
       this.players = this.players.filter(({ id }) => receivedIds.includes(id));
 
@@ -34,14 +36,18 @@ export default class Game {
         }
 
         if (playerObj) {
+          const dx = player.x - playerObj.x;
+          const dy = player.y - playerObj.y;
           // Store last movement
           playerObj.lastMovement = {
-            horizontal: Math.sign(player.x - playerObj.x),
-            vertical: Math.sign(player.y - playerObj.y)
+            horizontal: Math.sign(dx),
+            vertical: Math.sign(dy)
           };
 
-          playerObj.x = player.x;
-          playerObj.y = player.y;
+          if (Math.sqrt(dx**2 + dy**2) > allowedServerDivergencePx) {
+            playerObj.x = player.x;
+            playerObj.y = player.y;
+          }
 
           continue;
         }
