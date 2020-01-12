@@ -49,7 +49,32 @@ export default class Player {
     }
   }
 
+  doOtherMovement(p) {
+    let {vertical, horizontal} = this.lastMovement;
+
+    if (this.me) {
+      vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
+      horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
+    }
+
+    if (vertical && !horizontal) {
+      this.y += vertical * SPEED;
+    } else if (horizontal && !vertical) {
+      this.x += horizontal * SPEED;
+    } else if (vertical && horizontal) {
+      const adjustedSpeed = SPEED / Math.sqrt(2)
+
+      this.x += adjustedSpeed * horizontal;
+      this.y += adjustedSpeed * vertical;
+    }
+
+    if (this.me) {
+      this.socket.emit('move', {x: this.x, y: this.y});
+    }
+  }
+
   draw(p, g) {
+
     if (this.me) {
       let initX = this.x;
       let initY = this.y;
@@ -80,6 +105,8 @@ export default class Player {
       }
       p.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
       p.alpha = 1;
+    } else {
+      this.doOtherMovement(p);
     }
     
     if (!this.me) {
@@ -99,9 +126,6 @@ export default class Player {
       vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
       horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
     }
-
-    let initX = this.x;
-    let initY = this.y;
 
     if (vertical && !horizontal) {
       this.y += vertical * SPEED;
