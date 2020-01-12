@@ -24,6 +24,11 @@ export default class Game {
       let blockYT = Math.floor((playerYTop + diffY) / (windowHeight / 9));
       let blockXR = Math.floor((playerXRight + diffX) / (windowWidth / 16));
       let blockYB = Math.floor((playerYBot + diffX) / (windowHeight / 9));
+
+      if (playerXRight > windowWidth - 50) {
+        return false;
+      }
+
       if (blockXL < 0 || blockYT < 0 || blockXR > 19 || blockYB > 19)
         return true;
       if (diffY != 0 || diffX != 0) {
@@ -53,6 +58,10 @@ export default class Game {
       this.map = mapObject;
       this.x = x;
       this.y = y;
+ 
+      for (let player of this.players) {
+        player.iMap = mapObject;
+      }
     });
 
     await new Promise((resolve, reject) => {
@@ -104,24 +113,6 @@ export default class Game {
     });
 
     return socket;
-  }
-
-  // Checks if there is wall between two set of points
-  // Player position and given x y
-  checkWallCollisionBullet(playerX, playerY, X, Y) {
-    playerX = playerX / 20;
-    playerY = playerY / 20;
-    X = X / 20;
-    Y = Y / 20;
-    let angleDegrees = (Math.atan2(Y - playerY, X - playerX) * 180) / Math.PI;
-    while (playerX != X && playerY != Y) {
-      playerX += Math.sin(angleDegrees);
-      playerY += Math.cos(angleDegrees);
-      if (this.map[Math.floor(playerY)][Math.floor(playerX)] === 1) {
-        return true;
-      }
-    }
-    return false;
   }
 
   drawMap(p, windowWidth, windowHeight) {

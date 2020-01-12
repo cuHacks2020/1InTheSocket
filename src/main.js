@@ -28,10 +28,6 @@ async function main() {
     p.draw = () => {
       game.draw(p, window.innerWidth, window.innerHeight);
     };
-
-    p.mousePressed = () => {
-      console.log("mouse");
-    };
   };
 
   new p5(main);

@@ -3,13 +3,36 @@ import io from "socket.io-client";
 const SPEED = 5;
 
 export default class Player {
-  constructor(socket = null, socketId = null, x = Math.floor(Math.random() * 800), y = Math.floor(Math.random() * 800)) {
+  constructor(socket = null, socketId = null, x = Math.floor(Math.random() * 800), y = Math.floor(Math.random() * 800), map) {
     this.x = x;
     this.y = y;
     this.socket = socket;
     this.me = !socketId;
     this.id = socketId || socket.id;
     this.lastMovement = { horizontal: 0, vertical: 0 };
+    this.shot = {x1: 0, x2: 100, y1: 0, y2: 100};
+
+      // Checks if there is wall between two set of points
+    // Player position and given x y
+    this.checkWallCollisionBullet = (p) => {
+      let currentX = this.x;
+      let currentY = this.y;
+
+      let angleDegrees = Math.atan2(p.mouseY - currentY, p.mouseX - currentX);
+      console.log(angleDegrees);
+      console.log(Math.cos(angleDegrees));
+      console.log(Math.sin(angleDegrees))
+      while (currentX > 0 && currentX < window.innerWidth && currentY > 0 && currentY < window.innerHeight) {
+        currentX += Math.cos(angleDegrees);
+        currentY += Math.sin(angleDegrees);
+
+        
+        // if (this.iMap[Math.floor(currentX / window.innerWidth / 16)][Math.floor(currentY / window.innerHeight / 9)] === 1) {
+        //   break;
+        // }
+      }
+      return {x: currentX, y: currentY};
+    }
   }
 
   draw(p, g) {
@@ -20,6 +43,21 @@ export default class Player {
         this.x = initX;
         this.y = initY;
       }
+
+      p.mouseClicked = () => {
+        console.log("mouse");
+
+        const endCoords = this.checkWallCollisionBullet(p);
+
+        this.shot = {
+          x1: this.x,
+          y1: this.y, 
+          x2: endCoords.x,
+          y2: endCoords.y
+        }
+      }
+
+      p.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
     }
     
     if (!this.me) {
@@ -30,21 +68,6 @@ export default class Player {
       p.fill([0, 0, 255, 50]);
     }
     p.ellipse(this.x, this.y, 50);
-  }
-
-  shoot(p) {
-    let pos = {};
-    let clicked = false;
-    if (p.mousePressed) {
-      clicked = true;
-      pos.x = this.x;
-      pos.y = this.y;
-      console.log(pos);
-      console.log('clicked!');
-      return pos.x;
-    }
-    console.log(clicked);
-    return undefined;
   }
 
   doMovement(p, g) {
