@@ -32,6 +32,7 @@ export default class Game {
         const playerObj = this.players.find(({ id }) => id === player.id);
 
         if (playerObj && playerObj.me) {
+          playerObj.colour = player.colour;
           continue;
         }
 
@@ -54,7 +55,7 @@ export default class Game {
           continue;
         }
 
-        this.players.push(new Player(null, player.id, player.x, player.y));
+        this.players.push(new Player(null, player.id, player.x, player.y, player.colour));
       }
     });
 
@@ -88,13 +89,15 @@ export default class Game {
   }
   
   drawMap(p, windowWidth, windowHeight) {
+    p.fill(0,0);
+    p.strokeWeight(8);
+    p.stroke('white')
+
     let gridXLength = windowWidth / 20;
     let gridYLength = windowHeight / 20;
     for (let i = 0; i < this.map.length; i++) {
       for (let j = 0; j < this.map[0].length; j++) {
         if (this.map[i][j] == "1") {
-          p.color(255, 204, 0);
-          p.fill(255, 204, 0);
           p.rect(i * gridXLength, j * gridYLength, gridXLength, gridYLength);
         }
       }
@@ -108,6 +111,17 @@ export default class Game {
       this.drawMap(p, windowWidth, windowHeight);
     }
 
+    const r = 30;
+    p.stroke('blue');
+    p.strokeWeight(1);
+    p.fill(0, 0);
+    p.ellipse(p.mouseX, p.mouseY, r, r);
+    p.line(p.mouseX, p.mouseY + r/2, p.mouseX, p.mouseY - r/2);
+    p.line(p.mouseX - r/2, p.mouseY, p.mouseX + r/2, p.mouseY);
+
+
+    p.strokeWeight(6);
+    p.fill([0,0,255, 128]);
     this.players.forEach((player) => {
       player.draw(p);
     })
