@@ -46,6 +46,22 @@ export default class Player {
       this.y += adjustedSpeed * vertical;
     }
 
+    if (this.x > window.innerWidth) {
+      this.x = 0;
+    }
+
+    if (this.x < 0) {
+      this.x = window.innerWidth;
+    }
+
+    if (this.y > window.innerHeight) {
+      this.y = 0;
+    }
+
+    if (this.y < 0) {
+      this.y = window.innerHeight;
+    }
+
     if (this.me) {
       this.socket.emit('move', {x: this.x, y: this.y});
     }

@@ -3,16 +3,16 @@ const express = require("express");
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var path = require("path");
-const width = 20;
-const height = 20;
+const width = 9;
+const height = 16;
 const blocks = [
   [
     [0, 1, 0],
     [0, 1, 0],
-    [0, 1, 1]
+    [1, 1, 1]
   ],
   [
-    [0, 1, 0],
+    [0, 1, 1],
     [1, 1, 0],
     [0, 1, 0]
   ],
@@ -42,45 +42,45 @@ const blocks = [
     [1, 0, 1]
   ],
   [
-    [0, 0, 1],
-    [0, 1, 1],
-    [0, 1, 0]
-  ],
-  [
-    [1, 1, 0],
-    [0, 0, 0],
-    [0, 1, 0]
-  ],
-  [
     [1, 0, 1],
-    [0, 0, 0],
+    [1, 1, 1],
     [0, 1, 0]
   ],
   [
     [1, 1, 1],
-    [0, 0, 0],
-    [0, 0, 0]
+    [0, 0, 1],
+    [1, 0, 1]
   ],
   [
-    [0, 1, 0],
-    [0, 1, 0],
-    [0, 1, 0]
+    [1, 0, 1],
+    [1, 0, 0],
+    [1, 1, 0]
   ],
   [
-    [0, 0, 0],
-    [1, 1, 0],
-    [0, 0, 0]
+    [1, 1, 1],
+    [0, 0, 1],
+    [0, 0, 1]
   ],
-  [
-    [0, 0, 0],
-    [0, 1, 0],
-    [0, 0, 0]
-  ],
-  [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0]
-  ]
+  // [
+  //   [0, 1, 0],
+  //   [0, 1, 0],
+  //   [0, 1, 0]
+  // ],
+  // [
+  //   [0, 0, 0],
+  //   [1, 1, 0],
+  //   [0, 0, 0]
+  // ],
+  // [
+  //   [0, 0, 0],
+  //   [0, 1, 0],
+  //   [0, 0, 0]
+  // ],
+  // [
+  //   [0, 0, 0],
+  //   [0, 0, 0],
+  //   [0, 0, 0]
+  // ]
 ];
 var map = generateMap();
 
@@ -148,16 +148,16 @@ function generateMap() {
   }
 
   // add blocks
-  for (let j = 1; j < height - 1; j += 5) {
-    let i = 1;
-    while (i < width - 1) {
+  for (let j = 0; j < height; j += 4) {
+    let i = 0;
+    while (i < width) {
       if (map[j][i] == 0) {
         let block = blocks[Math.floor(Math.random() * blocks.length)];
         let rotations = Math.floor(Math.random() * 3);
         for (let r = 0; r < rotations; r++) block = rotateBlock(block);
         insertBlock(map, i, j, block);
       }
-      i += 5;
+      i += 4;
     }
   }
   return map;
