@@ -89,7 +89,7 @@ let players = [];
 const PORT = process.env.PORT || 80;
 server.listen(PORT);
 
-console.log("GO to http://localhost:80");
+console.log("Go to http://localhost:80");
 
 const public = path.join(__dirname, "..", "public");
 
@@ -104,11 +104,12 @@ io.on("connection", function(socket) {
   players.push({
     id: socket.id,
     x,
-    y
+    y,
+    dx: 0,
+    dy: 0
   });
 
-  console.log("New connection");
-  console.log(players);
+  console.log(`New connection: ${players.length} players now connected.`);
 
   socket.on("move", (data) => {
     const {x, y} = data;
@@ -116,16 +117,20 @@ io.on("connection", function(socket) {
 
     if (!player) return;
 
+    player.dx = x - player.x;
+    player.dy = y - player.y;
     player.x = x;
     player.y = y;
 
+    // simulate lag
+    // setTimeout(() => socket.emit("gameData", players), 5000); 
     socket.emit("gameData", players);
   })
 
   socket.on("disconnect", (data) => {
     console.log("Disconnect");
     players = players.filter(({id}) => id !== socket.id);
-    console.log(players);
+    console.log(`Disconnection: ${players.length} players now connected.`);
   });
 });
 
