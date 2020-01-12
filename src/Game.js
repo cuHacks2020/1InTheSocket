@@ -1,11 +1,11 @@
-import io from 'socket.io-client';
-import Player from './Player';
+import io from "socket.io-client";
+import Player from "./Player";
 
 export default class Game {
   async init() {
     const socket = await this.connect();
 
-    this.players = [new Player(socket)]
+    this.players = [new Player(socket)];
   }
 
   async connect() {
@@ -20,9 +20,9 @@ export default class Game {
       socket.on("connect", () => {
         resolve();
       });
-    })
+    });
 
-    socket.on("gameData", (data) => {
+    socket.on("gameData", data => {
       const allowedServerDivergencePx = 100;
 
       const receivedIds = data.map(({ id }) => id);
@@ -37,7 +37,7 @@ export default class Game {
         }
 
         if (playerObj) {
-          const {dx, dy} = player;
+          const { dx, dy } = player;
           const serverDiffX = playerObj.x - player.x;
           const serverDiffY = playerObj.y - player.y;
 
@@ -47,7 +47,10 @@ export default class Game {
             vertical: Math.sign(dy)
           };
 
-          if (Math.sqrt(serverDiffX**2 + serverDiffY**2) > allowedServerDivergencePx) {
+          if (
+            Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
+            allowedServerDivergencePx
+          ) {
             playerObj.x = player.x;
             playerObj.y = player.y;
           }
@@ -55,7 +58,9 @@ export default class Game {
           continue;
         }
 
-        this.players.push(new Player(null, player.id, player.x, player.y, player.colour));
+        this.players.push(
+          new Player(null, player.id, player.x, player.y, player.colour)
+        );
       }
     });
 
@@ -69,7 +74,7 @@ export default class Game {
     playerY = playerY / 20;
     X = X / 20;
     Y = Y / 20;
-    let angleDegrees = Math.atan2(Y - playerY, X - playerX) * 180 / Math.PI;
+    let angleDegrees = (Math.atan2(Y - playerY, X - playerX) * 180) / Math.PI;
     while (playerX != X && playerY != Y) {
       playerX += Math.sin(angleDegrees);
       playerY += Math.cos(angleDegrees);
@@ -81,17 +86,25 @@ export default class Game {
   }
 
   checkWallCollisionPlayer(playerX, playerY, differenceX, differenceY) {
-    if (differenceY != 0 && this.map[Math.floor((playerY + differenceY) / 20)][Math.floor(playerX / 20)] ||
-      differenceX != 0 && this.map[Math.floor(playerY / 20)][Math.floor((playerX + differenceX) / 20)]) {
+    if (
+      (differenceY != 0 &&
+        this.map[Math.floor((playerY + differenceY) / 20)][
+          Math.floor(playerX / 20)
+        ]) ||
+      (differenceX != 0 &&
+        this.map[Math.floor(playerY / 20)][
+          Math.floor((playerX + differenceX) / 20)
+        ])
+    ) {
       return true;
     }
     return false;
   }
-  
+
   drawMap(p, windowWidth, windowHeight) {
-    p.fill(0,0);
+    p.fill(0, 0);
     p.strokeWeight(8);
-    p.stroke('white')
+    p.stroke("white");
 
     let gridXLength = windowWidth / 16;
     let gridYLength = windowHeight / 9;
@@ -112,18 +125,17 @@ export default class Game {
     }
 
     const r = 30;
-    p.stroke('blue');
+    p.stroke("blue");
     p.strokeWeight(1);
     p.fill(0, 0);
     p.ellipse(p.mouseX, p.mouseY, r, r);
-    p.line(p.mouseX, p.mouseY + r/2, p.mouseX, p.mouseY - r/2);
-    p.line(p.mouseX - r/2, p.mouseY, p.mouseX + r/2, p.mouseY);
-
+    p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
+    p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
 
     p.strokeWeight(6);
-    
-    this.players.forEach((player) => {
+
+    this.players.forEach(player => {
       player.draw(p);
-    })
+    });
   }
 }
