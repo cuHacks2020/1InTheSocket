@@ -7,7 +7,7 @@ export default class Game {
 
     this.players = [new Player(socket)]
   }
-    
+
   async connect() {
     const socket = io();
     socket.on("map", (mapObject, x, y) => {
@@ -23,11 +23,11 @@ export default class Game {
     })
 
     socket.on("gameData", (data) => {
-      const receivedIds = data.map(({id}) => id);
-      this.players = this.players.filter(({id}) => receivedIds.includes(id));
+      const receivedIds = data.map(({ id }) => id);
+      this.players = this.players.filter(({ id }) => receivedIds.includes(id));
 
       for (const player of data) {
-        const playerObj = this.players.find(({id}) => id === player.id);
+        const playerObj = this.players.find(({ id }) => id === player.id);
 
         if (playerObj) {
           playerObj.x = player.x;
@@ -43,6 +43,31 @@ export default class Game {
     return socket;
   }
 
+  // Checks if there is wall between two set of points
+  // Player position and given x y
+  checkWallCollisionBullet(playerX, playerY, X, Y) {
+    playerX = playerX / 20;
+    playerY = playerY / 20;
+    X = X / 20;
+    Y = Y / 20;
+    let angleDegrees = Math.atan2(Y - playerY, X - playerX) * 180 / Math.PI;
+    while (playerX != X && playerY != Y) {
+      playerX += Math.sin(angleDegrees);
+      playerY += Math.cos(angleDegrees);
+      if (this.map[Math.floor(playerY)][Math.floor(playerX)] == "1") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  checkWallCollisionPlayer(playerX, playerY, differenceX, differenceY) {
+    if (differenceY != 0 && this.map[Math.floor((playerY + differenceY) / 20)][Math.floor(playerX / 20)] ||
+      differenceX != 0 && this.map[Math.floor(playerY / 20)][Math.floor((playerX + differenceX) / 20)]) {
+      return true;
+    }
+    return false;
+  }
   drawMap(p, windowWidth, windowHeight) {
     let gridXLength = windowWidth / 20;
     let gridYLength = windowHeight / 20;
@@ -65,7 +90,7 @@ export default class Game {
     }
 
     this.players.forEach((player) => {
-        player.draw(p);
+      player.draw(p);
     })
   }
 }
