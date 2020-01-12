@@ -21,22 +21,19 @@ export default class Player {
   }
 
   doMovement(p) {
-    if(p.keyIsDown(87)) {
-      this.y -= SPEED;
-    }
+    const vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
+    const horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
 
-    if(p.keyIsDown(83)) {
-      this.y += SPEED;
-    }
+    if (vertical && !horizontal) {
+      this.y += vertical * SPEED;
+    } else if (horizontal && !vertical) {
+      this.x += horizontal * SPEED;
+    } else if (vertical && horizontal) {
+      const adjustedSpeed = SPEED / Math.sqrt(2)
 
-    if(p.keyIsDown(65)) {
-      this.x -= SPEED;
+      this.x += adjustedSpeed * horizontal;
+      this.y += adjustedSpeed * vertical;
     }
-
-    if(p.keyIsDown(68)) {
-      this.x += SPEED;
-    }
-    
 
     this.socket.emit('move', {x: this.x, y: this.y});
   }
