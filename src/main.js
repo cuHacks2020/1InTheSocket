@@ -16,8 +16,8 @@ async function main() {
   
   let main = (p) => {
     p.setup = () => {
-  
       p.createCanvas(window.innerWidth, window.innerHeight);
+      p.noCursor();
       p.background(40);
     };
   

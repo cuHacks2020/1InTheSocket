@@ -17,6 +17,13 @@ export default class Player {
   draw(p) {
     this.doMovement(p);
    
+    if (!this.me) {
+      p.stroke('red');
+      p.fill([255,0,0, 50]);
+    } else {
+      p.stroke('blue');
+      p.fill([0,0,255, 50]);
+    }
     p.ellipse(this.x, this.y, 50);
   }
 
