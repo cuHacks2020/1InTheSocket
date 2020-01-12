@@ -15,11 +15,13 @@ console.log(
 async function main() {
   const game = new Game();
   await game.init();
+  game.width = window.innerWidth;
+  game.height = window.innerHeight;
 
   let main = p => {
     p.setup = () => {
-      p.createCanvas(window.innerWidth, window.innerHeight);
       p.noCursor();
+      p.createCanvas(window.innerWidth, window.innerHeight);
       p.background(40);
     };
 
