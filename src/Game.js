@@ -47,6 +47,11 @@ export default class Game {
           if (Math.sqrt(dx**2 + dy**2) > allowedServerDivergencePx) {
             playerObj.x = player.x;
             playerObj.y = player.y;
+
+            playerObj.lastMovement = {
+              horizontal: 0,
+              vertical: 0
+            };
           }
 
           continue;
