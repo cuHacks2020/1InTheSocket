@@ -88,6 +88,11 @@ io.on("connection", function(socket) {
     socket.emit("gameData", players);
   });
 
+  socket.on("kill", id => {
+    io.emit("dead", id);
+    console.log(id);
+  })
+
   socket.on("disconnect", data => {
     console.log("Disconnect");
     players = players.filter(({id}) => id !== socket.id);

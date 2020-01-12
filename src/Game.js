@@ -49,6 +49,7 @@ export default class Game {
     const socket = await this.connect();
 
     this.players = [new Player(socket)];
+    this.players[0].allPlayers = this.players;
   }
 
   async connect() {
@@ -69,6 +70,12 @@ export default class Game {
         resolve();
       });
     });
+
+    socket.on("dead", (id) => {
+      if (id === socket.id) { 
+        window.location.reload();
+      }
+    })
 
     socket.on("gameData", data => {
       const allowedServerDivergencePx = 100;
@@ -109,6 +116,7 @@ export default class Game {
         this.players.push(
           new Player(null, player.id, player.x, player.y, player.colour)
         );
+        this.players[0].allPlayers = this.players;
       }
     });
 

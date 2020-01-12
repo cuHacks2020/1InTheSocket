@@ -10,26 +10,40 @@ export default class Player {
     this.me = !socketId;
     this.id = socketId || socket.id;
     this.lastMovement = { horizontal: 0, vertical: 0 };
-    this.shot = {x1: 0, x2: 100, y1: 0, y2: 100};
+    this.shot = {x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0};
+    this.hasShot = true;
 
       // Checks if there is wall between two set of points
     // Player position and given x y
     this.checkWallCollisionBullet = (p) => {
+      if (!this.allPlayers) return;
+
       let currentX = this.x;
       let currentY = this.y;
 
       let angleDegrees = Math.atan2(p.mouseY - currentY, p.mouseX - currentX);
-      console.log(angleDegrees);
-      console.log(Math.cos(angleDegrees));
-      console.log(Math.sin(angleDegrees))
       while (currentX > 0 && currentX < window.innerWidth && currentY > 0 && currentY < window.innerHeight) {
         currentX += Math.cos(angleDegrees);
         currentY += Math.sin(angleDegrees);
 
-        
-        // if (this.iMap[Math.floor(currentX / window.innerWidth / 16)][Math.floor(currentY / window.innerHeight / 9)] === 1) {
-        //   break;
-        // }
+        if (currentX > window.innerWidth || currentX < 0) {
+          break;
+        }
+
+        if (this.iMap[Math.floor(currentX / (window.innerWidth / 16))][Math.floor(currentY / (window.innerHeight / 9))] === 1) {
+          break;
+        }
+
+        for (const pl of this.allPlayers) {
+          if (pl.me) {
+            continue;
+          }
+
+          if (!pl.me && Math.sqrt((pl.x- currentX)**2 + (pl.y - currentY)**2) < 25) {
+            this.socket.emit("kill", pl.id);
+            return {x: currentX, y: currentY};
+          }
+        }
       }
       return {x: currentX, y: currentY};
     }
@@ -45,19 +59,27 @@ export default class Player {
       }
 
       p.mouseClicked = () => {
-        console.log("mouse");
+        if (this.hasShot) {
+          const endCoords = this.checkWallCollisionBullet(p);
 
-        const endCoords = this.checkWallCollisionBullet(p);
-
-        this.shot = {
-          x1: this.x,
-          y1: this.y, 
-          x2: endCoords.x,
-          y2: endCoords.y
+          this.shot = {
+            x1: this.x,
+            y1: this.y, 
+            x2: endCoords.x,
+            y2: endCoords.y,
+            alpha: 1
+          }
         }
       }
 
+
+      p.stroke(`rgba(0,0,255,${this.shot.alpha})`);
+      if (this.shot.alpha > 0.02)
+      {
+        this.shot.alpha -= 0.02;
+      }
       p.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
+      p.alpha = 1;
     }
     
     if (!this.me) {
