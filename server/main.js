@@ -109,8 +109,8 @@ function generateMap() {
   }
 
   // add blocks
-  for (let j = 1; j < height; j += 5) {
-    let i = 1;
+  for (let j = 0; j < height; j += 4) {
+    let i = 0;
     while (i < width) {
       if (map[j][i] === 0) {
         let block = blocks[Math.floor(Math.random() * blocks.length)];
@@ -118,7 +118,7 @@ function generateMap() {
         for (let r = 0; r < rotations; r++) block = rotateBlock(block);
         insertBlock(map, i, j, block);
       }
-      i += 5;
+      i += 4;
     }
   }
   return map;

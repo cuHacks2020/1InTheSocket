@@ -4,30 +4,34 @@ import Player from "./Player";
 export default class Game {
   constructor() {
     this.checkWallCollisionPlayer = (
-      playerXLeft,
-      playerYTop,
+      x,
+      y,
       diffX,
       diffY,
       windowWidth,
       windowHeight
     ) => {
       if (!this.map) return;
-      playerXLeft += 10;
-      playerYTop += 10;
-      let playerXRight = playerXLeft + windowWidth / 32;
-      let playerYBot = playerYTop + windowHeight / 32;
-      let blockXL = Math.floor((playerXLeft + diffX) / (windowWidth / 20));
-      let blockYT = Math.floor((playerYTop + diffY) / (windowHeight / 20));
-      let blockXR = Math.floor((playerXRight + diffX) / (windowWidth / 20));
-      let blockYB = Math.floor((playerYBot + diffX) / (windowHeight / 20));
+      
+      const r = 25;
+      // playerXLeft += 10;
+      // playerYTop += 10;
+      let playerXRight = x + r;
+      let playerYBot = y + r;
+      const playerXLeft = x - r;
+      const playerYTop = y - r;
+      let blockXL = Math.floor((playerXLeft + diffX) / (windowWidth / 16));
+      let blockYT = Math.floor((playerYTop + diffY) / (windowHeight / 9));
+      let blockXR = Math.floor((playerXRight + diffX) / (windowWidth / 16));
+      let blockYB = Math.floor((playerYBot + diffX) / (windowHeight / 9));
       if (blockXL < 0 || blockYT < 0 || blockXR > 19 || blockYB > 19)
         return true;
       if (diffY != 0 || diffX != 0) {
         if (
-          this.map[blockYT][blockXL] ||
-          this.map[blockYT][blockXR] ||
-          this.map[blockYB][blockXL] ||
-          this.map[blockYB][blockXR]
+          this.map[blockXL][blockYT] ||
+          this.map[blockXR][blockYT] ||
+          this.map[blockXL][blockYB] ||
+          this.map[blockXR][blockYB]
         ) {
           return true;
         }
@@ -44,6 +48,12 @@ export default class Game {
 
   async connect() {
     const socket = io();
+
+    socket.on("map", (mapObject, x, y) => {
+      this.map = mapObject;
+      this.x = x;
+      this.y = y;
+    });
 
     await new Promise((resolve, reject) => {
       socket.on("connect", () => {
@@ -125,9 +135,7 @@ export default class Game {
     for (let i = 0; i < this.map.length; i++) {
       for (let j = 0; j < this.map[0].length; j++) {
         if (this.map[i][j] === 1) {
-          p.color(255, 204, 0);
-          p.fill(255, 204, 0);
-          p.rect(j * gridXLength, i * gridYLength, gridXLength, gridYLength);
+          p.rect(i * gridXLength, j * gridYLength, gridXLength, gridYLength);
         }
       }
     }
@@ -143,6 +151,7 @@ export default class Game {
     const r = 30;
     p.stroke("blue");
     p.strokeWeight(1);
+    p.noCursor();
     p.fill(0, 0);
     p.ellipse(p.mouseX, p.mouseY, r, r);
     p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);

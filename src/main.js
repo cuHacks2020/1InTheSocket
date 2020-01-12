@@ -20,6 +20,7 @@ async function main() {
 
   let main = p => {
     p.setup = () => {
+      p.noCursor();
       p.createCanvas(window.innerWidth, window.innerHeight);
       p.background(40);
     };
