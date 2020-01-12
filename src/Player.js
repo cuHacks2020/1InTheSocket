@@ -10,19 +10,23 @@ export default class Player {
     this.me = !socketId;
 
     this.id = socketId || socket.id;
+
+    this.lastMovement = {horizontal: 0, vertical: 0};
   }
 
   draw(p) {
-    if (this.me) {
-      this.doMovement(p);
-    }
+    this.doMovement(p);
    
     p.ellipse(this.x, this.y, 50);
   }
 
-  doMovement(p) {
-    const vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
-    const horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
+  doMovement(p, predict=false) {
+    let {vertical, horizontal} = this.lastMovement;
+
+    if (this.me) {
+      vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
+      horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
+    }
 
     if (vertical && !horizontal) {
       this.y += vertical * SPEED;
@@ -35,6 +39,8 @@ export default class Player {
       this.y += adjustedSpeed * vertical;
     }
 
-    this.socket.emit('move', {x: this.x, y: this.y});
+    if (this.me) {
+      this.socket.emit('move', {x: this.x, y: this.y});
+    }
   }
 }

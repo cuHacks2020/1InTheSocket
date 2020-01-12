@@ -34,6 +34,12 @@ export default class Game {
         }
 
         if (playerObj) {
+          // Store last movement
+          playerObj.lastMovement = {
+            horizontal: Math.sign(player.x - playerObj.x),
+            vertical: Math.sign(player.y - playerObj.y)
+          };
+
           playerObj.x = player.x;
           playerObj.y = player.y;
 
@@ -72,6 +78,7 @@ export default class Game {
     }
     return false;
   }
+  
   drawMap(p, windowWidth, windowHeight) {
     let gridXLength = windowWidth / 20;
     let gridYLength = windowHeight / 20;
