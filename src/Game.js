@@ -29,6 +29,10 @@ export default class Game {
       for (const player of data) {
         const playerObj = this.players.find(({ id }) => id === player.id);
 
+        if (playerObj.me) {
+          continue;
+        }
+
         if (playerObj) {
           playerObj.x = player.x;
           playerObj.y = player.y;
