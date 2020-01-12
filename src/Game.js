@@ -152,12 +152,12 @@ export default class Game {
 
     this.players.forEach(player => {
       player.draw(p, this);
-      let pos = player.shoot(p);
-      if (pos) {
-        console.log(pos);
+      // let pos = player.shoot(p);
+      // if (pos) {
+      //   console.log(pos);
 
-        p.line(pos.x, pos.y, p.mouseX, p.mouseY);
-      }
+      //   p.line(pos.x, pos.y, p.mouseX, p.mouseY);
+      // }
     });
 
   }

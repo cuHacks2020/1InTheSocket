@@ -30,9 +30,6 @@ export default class Player {
       p.fill([0, 0, 255, 50]);
     }
     p.ellipse(this.x, this.y, 50);
-    p.ellipseMode(p.CORNER);
-    p.ellipse(this.x, this.y, g.width / 32, g.height / 32);
-
   }
 
   shoot(p) {

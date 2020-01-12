@@ -3,8 +3,8 @@ const express = require("express");
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var path = require("path");
-const width = 20;
-const height = 20;
+const width = 9;
+const height = 16;
 const blocks = [
   [
     [0, 1, 0],
@@ -60,6 +60,7 @@ io.on("connection", function(socket) {
   let y = 0;
   getSpawn(map, x, y);
   socket.emit("map", map);
+  console.log(map);
 
   players.push({
     id: socket.id,
