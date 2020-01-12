@@ -93,8 +93,8 @@ export default class Game {
     p.strokeWeight(8);
     p.stroke('white')
 
-    let gridXLength = windowWidth / 20;
-    let gridYLength = windowHeight / 20;
+    let gridXLength = windowWidth / 16;
+    let gridYLength = windowHeight / 9;
     for (let i = 0; i < this.map.length; i++) {
       for (let j = 0; j < this.map[0].length; j++) {
         if (this.map[i][j] == "1") {
@@ -121,7 +121,7 @@ export default class Game {
 
 
     p.strokeWeight(6);
-    p.fill([0,0,255, 128]);
+    
     this.players.forEach((player) => {
       player.draw(p);
     })
