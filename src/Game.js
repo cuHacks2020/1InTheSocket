@@ -2,6 +2,40 @@ import io from "socket.io-client";
 import Player from "./Player";
 
 export default class Game {
+  constructor() {
+    this.checkWallCollisionPlayer = (
+      playerXLeft,
+      playerYTop,
+      diffX,
+      diffY,
+      windowWidth,
+      windowHeight
+    ) => {
+      if (!this.map) return;
+      playerXLeft += 10;
+      playerYTop += 10;
+      let playerXRight = playerXLeft + windowWidth / 32;
+      let playerYBot = playerYTop + windowHeight / 32;
+      let blockXL = Math.floor((playerXLeft + diffX) / (windowWidth / 20));
+      let blockYT = Math.floor((playerYTop + diffY) / (windowHeight / 20));
+      let blockXR = Math.floor((playerXRight + diffX) / (windowWidth / 20));
+      let blockYB = Math.floor((playerYBot + diffX) / (windowHeight / 20));
+      if (blockXL < 0 || blockYT < 0 || blockXR > 19 || blockYB > 19)
+        return true;
+      if (diffY != 0 || diffX != 0) {
+        if (
+          this.map[blockYT][blockXL] ||
+          this.map[blockYT][blockXR] ||
+          this.map[blockYB][blockXL] ||
+          this.map[blockYB][blockXR]
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+  }
+
   async init() {
     const socket = await this.connect();
 
@@ -10,11 +44,6 @@ export default class Game {
 
   async connect() {
     const socket = io();
-    socket.on("map", (mapObject, x, y) => {
-      this.map = mapObject;
-      this.x = x;
-      this.y = y;
-    });
 
     await new Promise((resolve, reject) => {
       socket.on("connect", () => {
@@ -78,25 +107,9 @@ export default class Game {
     while (playerX != X && playerY != Y) {
       playerX += Math.sin(angleDegrees);
       playerY += Math.cos(angleDegrees);
-      if (this.map[Math.floor(playerY)][Math.floor(playerX)] == "1") {
+      if (this.map[Math.floor(playerY)][Math.floor(playerX)] === 1) {
         return true;
       }
-    }
-    return false;
-  }
-
-  checkWallCollisionPlayer(playerX, playerY, differenceX, differenceY) {
-    if (
-      (differenceY != 0 &&
-        this.map[Math.floor((playerY + differenceY) / 20)][
-          Math.floor(playerX / 20)
-        ]) ||
-      (differenceX != 0 &&
-        this.map[Math.floor(playerY / 20)][
-          Math.floor((playerX + differenceX) / 20)
-        ])
-    ) {
-      return true;
     }
     return false;
   }
@@ -108,10 +121,13 @@ export default class Game {
 
     let gridXLength = windowWidth / 16;
     let gridYLength = windowHeight / 9;
+
     for (let i = 0; i < this.map.length; i++) {
       for (let j = 0; j < this.map[0].length; j++) {
-        if (this.map[i][j] == "1") {
-          p.rect(i * gridXLength, j * gridYLength, gridXLength, gridYLength);
+        if (this.map[i][j] === 1) {
+          p.color(255, 204, 0);
+          p.fill(255, 204, 0);
+          p.rect(j * gridXLength, i * gridYLength, gridXLength, gridYLength);
         }
       }
     }
@@ -135,7 +151,14 @@ export default class Game {
     p.strokeWeight(6);
 
     this.players.forEach(player => {
-      player.draw(p);
+      player.draw(p, this);
+      let pos = player.shoot(p);
+      if (pos) {
+        console.log(pos);
+
+        p.line(pos.x, pos.y, p.mouseX, p.mouseY);
+      }
     });
+
   }
 }
