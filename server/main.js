@@ -58,7 +58,6 @@ app.use(express.static(public));
 io.on("connection", function(socket) {
   let x,y;
 
-  getSpawn(map, x, y);
   socket.emit("map", map);
 
   while (!x || map[x][y] === 1) {
@@ -159,15 +158,3 @@ function rotateBlock(block) {
   return rotated;
 }
 
-function getSpawn(map, x, y) {
-  for (let j = 0; j < height; j++) {
-    for (let i = 0; i < width; i++) {
-      if (map[j][i] === 0) {
-        y = j;
-        x = i;
-        return true;
-      }
-    }
-  }
-  return false;
-}
