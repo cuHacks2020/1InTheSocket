@@ -56,11 +56,17 @@ const public = path.join(__dirname, "..", "public");
 app.use(express.static(public));
 
 io.on("connection", function(socket) {
-  let x = 0;
-  let y = 0;
-  getSpawn(map, x, y);
+  let x,y;
+
   socket.emit("map", map);
-  console.log(map);
+
+  while (!x || map[x][y] === 1) {
+    x = Math.floor(Math.random() * height);
+    y = Math.floor(Math.random() * width);
+  }
+
+  x = x + 0.5;
+  y = y + 0.5;
 
   players.push({
     id: socket.id,
@@ -69,6 +75,8 @@ io.on("connection", function(socket) {
     dx: 0,
     dy: 0
   });
+
+  socket.emit("startingPos", {x, y});
 
   console.log(`New connection: ${players.length} players now connected.`);
 
@@ -150,15 +158,3 @@ function rotateBlock(block) {
   return rotated;
 }
 
-function getSpawn(map, x, y) {
-  for (let j = 0; j < height; j++) {
-    for (let i = 0; i < width; i++) {
-      if (map[j][i] === 0) {
-        y = j;
-        x = i;
-        return true;
-      }
-    }
-  }
-  return false;
-}
