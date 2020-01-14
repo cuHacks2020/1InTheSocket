@@ -1,9 +1,14 @@
 import io from "socket.io-client";
 
-const SPEED = 5;
+const blockHeight = window.innerHeight / 9; 
+const blockWidth = window.innerWidth / 16;
+const SPEED = 0.07;
+const speed_v = SPEED * blockHeight;
+const speed_h = SPEED * blockWidth;
+
 
 export default class Player {
-  constructor(socket = null, socketId = null, x = Math.floor(Math.random() * 800), y = Math.floor(Math.random() * 800), map) {
+  constructor(socket = null, socketId = null, x = 0, y = 0, map) {
     this.x = x;
     this.y = y;
     this.socket = socket;
@@ -12,6 +17,13 @@ export default class Player {
     this.lastMovement = { horizontal: 0, vertical: 0 };
     this.shot = {x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0};
     this.hasShot = true;
+
+    if (socket) {
+      socket.on('startingPos', ({x,y}) => {
+        this.x = x * blockWidth;
+        this.y = y * blockHeight;
+      });
+    }
 
       // Checks if there is wall between two set of points
     // Player position and given x y
@@ -52,29 +64,20 @@ export default class Player {
   doOtherMovement(p) {
     let {vertical, horizontal} = this.lastMovement;
 
-    if (this.me) {
-      vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
-      horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
-    }
-
     if (vertical && !horizontal) {
-      this.y += vertical * SPEED;
+      this.y += vertical * speed_v;
     } else if (horizontal && !vertical) {
-      this.x += horizontal * SPEED;
+      this.x += horizontal * speed_h;
     } else if (vertical && horizontal) {
-      const adjustedSpeed = SPEED / Math.sqrt(2)
+      const adjustedSpeed_v = speed_v / Math.sqrt(2)
+      const adjustedSpeed_h = speed_h / Math.sqrt(2)
 
-      this.x += adjustedSpeed * horizontal;
-      this.y += adjustedSpeed * vertical;
-    }
-
-    if (this.me) {
-      this.socket.emit('move', {x: this.x, y: this.y});
+      this.x += adjustedSpeed_h * horizontal;
+      this.y += adjustedSpeed_v * vertical;
     }
   }
 
   draw(p, g) {
-
     if (this.me) {
       let initX = this.x;
       let initY = this.y;
@@ -96,7 +99,6 @@ export default class Player {
           }
         }
       }
-
 
       p.stroke(`rgba(0,0,255,${this.shot.alpha})`);
       if (this.shot.alpha > 0.02)
@@ -128,14 +130,15 @@ export default class Player {
     }
 
     if (vertical && !horizontal) {
-      this.y += vertical * SPEED;
+      this.y += vertical * speed_v;
     } else if (horizontal && !vertical) {
-      this.x += horizontal * SPEED;
+      this.x += horizontal * speed_h;
     } else if (vertical && horizontal) {
-      const adjustedSpeed = SPEED / Math.sqrt(2);
+      const adjustedSpeed_v = speed_v / Math.sqrt(2)
+      const adjustedSpeed_h = speed_h / Math.sqrt(2)
 
-      this.x += adjustedSpeed * horizontal;
-      this.y += adjustedSpeed * vertical;
+      this.x += adjustedSpeed_h * horizontal;
+      this.y += adjustedSpeed_v * vertical;
     }
     if (this.x > window.innerWidth) {
       this.x = window.innerWidth;
@@ -154,14 +157,14 @@ export default class Player {
     }
 
     if (this.me) {
-      this.socket.emit("move", { x: this.x, y: this.y });
+      this.socket.emit("move", { x: this.x / blockWidth, y: this.y / blockHeight });
     }
 
     return g.checkWallCollisionPlayer(
       this.x,
       this.y,
-      horizontal * SPEED,
-      vertical * SPEED,
+      horizontal * speed_h,
+      vertical * speed_v,
       g.width,
       g.height
     );

@@ -1,6 +1,9 @@
 import io from "socket.io-client";
 import Player from "./Player";
 
+const blockHeight = window.innerHeight / 9; 
+const blockWidth = window.innerWidth / 16;
+
 export default class Game {
   constructor() {
     this.checkWallCollisionPlayer = (
@@ -106,15 +109,15 @@ export default class Game {
             Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
             allowedServerDivergencePx
           ) {
-            playerObj.x = player.x;
-            playerObj.y = player.y;
+            playerObj.x = player.x * blockWidth;
+            playerObj.y = player.y * blockHeight;
           }
 
           continue;
         }
 
         this.players.push(
-          new Player(null, player.id, player.x, player.y, player.colour)
+          new Player(null, player.id, player.x * blockWidth, player.y * blockHeight)
         );
         this.players[0].allPlayers = this.players;
       }
