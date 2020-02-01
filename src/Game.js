@@ -183,11 +183,9 @@ export default class Game {
     });
 
     socket.on("leaderboard", (leaderboard) => {
-      this.leaderboard = [...leaderboard];
-      this.leaderboard = this.leaderboard.sort(function (a,b) {
+      this.leaderboard = leaderboard.sort(function (a,b) {
         return b.score - a.score;
       });
-      console.log(this.leaderboard);
     })
 
     socket.on("fire", ({ player, oldWidth, oldHeight }) => {
