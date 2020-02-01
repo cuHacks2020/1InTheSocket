@@ -17,8 +17,7 @@ export default class Game {
       if (!this.map) return;
       
       const r = 25;
-      // playerXLeft += 10;
-      // playerYTop += 10;
+
       let playerXRight = x + r;
       let playerYBot = y + r;
       const playerXLeft = x - r;
@@ -68,7 +67,7 @@ export default class Game {
       }
     });
 
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
       socket.on("connect", () => {
         resolve();
       });
@@ -163,12 +162,6 @@ export default class Game {
 
     this.players.forEach(player => {
       player.draw(p, this);
-      // let pos = player.shoot(p);
-      // if (pos) {
-      //   console.log(pos);
-
-      //   p.line(pos.x, pos.y, p.mouseX, p.mouseY);
-      // }
     });
 
   }
