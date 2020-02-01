@@ -66,7 +66,7 @@ export default class Game {
         if (connections[0] && connections[1] && connections[2]) {
           resolve();
         }
-      }
+      };
 
       socket.on("connect", () => {
         connections[0] = true;
@@ -101,7 +101,7 @@ export default class Game {
           break;
         }
 
-        player.lastMovement = {horizontal: 0, vertical: 0};
+        player.lastMovement = { horizontal: 0, vertical: 0 };
       }
 
       this.state = State.Playing;
@@ -156,6 +156,8 @@ export default class Game {
             currentPlayer.y = y * blockHeight;
           }
 
+          currentPlayer.colour = newPlayerData.colour;
+          currentPlayer.username = newPlayerData.username;
           continue;
         }
 
@@ -163,7 +165,8 @@ export default class Game {
           null,
           playerId,
           newPlayerData.x * blockWidth,
-          newPlayerData.y * blockHeight
+          newPlayerData.y * blockHeight,
+          newPlayerData.username
         );
         this.players[playerId].iMap = this.map;
         this.players[playerId].allPlayers = this.players;
@@ -225,7 +228,7 @@ export default class Game {
         if (player.dead || (player.me && this.state !== State.Playing)) {
           continue;
         }
-  
+
         player.draw(p, this, pg, this.state);
       }
     }
@@ -234,7 +237,6 @@ export default class Game {
       const aspect = window.innerWidth / window.innerHeight;
       const portHeight = 425;
       const portWidth = portHeight * aspect;
-
       p.image(
         pg,
         0,
@@ -249,7 +251,7 @@ export default class Game {
 
       return;
     }
-    
+
     p.image(pg, 0, 0, windowWidth, windowHeight);
     this.drawGameState(p);
   }
@@ -280,7 +282,7 @@ export default class Game {
           window.innerHeight / 2 - 60
         );
         p.text(
-          this.countdown || 'wtf',
+          this.countdown || "wtf",
           window.innerWidth / 2,
           window.innerHeight / 2 + 60
         );
