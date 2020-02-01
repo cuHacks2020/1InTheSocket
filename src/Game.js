@@ -185,6 +185,10 @@ export default class Game {
       };
     });
 
+    socket.on("disconnect", () => {
+      alert('Disconnected for being idle.');
+    })
+
     return socket;
   }
 

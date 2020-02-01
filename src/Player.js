@@ -158,7 +158,7 @@ export default class Player {
       this.y = initY;
     }
 
-    if (this.me) {
+    if (this.me && !(vertical === 0 && horizontal === 0)) {
       this.socket.emit("move", {
         x: this.x / blockWidth,
         y: this.y / blockHeight

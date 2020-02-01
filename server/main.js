@@ -79,20 +79,23 @@ let countdown = COUNTDOWN;
 // let buffer = 0;
 
 setInterval(() => {
-  if (Object.keys(players).length > 0) {
+  if (state === State.Playing && Object.keys(players).length > 0) {
     for (const id in players) {
       if (Date.now() - players[id].lastReq > 10000) {
         if (!players[id].dead) {
           io.emit("dead", id);
+          io.sockets.connected[id].disconnect();
           delete players[id];
         }
+      } else {
+        console.log(id, Date.now() - players[id].lastReq);
       }
     }
   
     checkState();
     io.emit("gameData", players);
   }
-}, 3)
+}, 3000)
 
 io.on("connection", function(socket) {
   socket.emit("map", map);
