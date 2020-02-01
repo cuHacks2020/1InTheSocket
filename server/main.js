@@ -44,7 +44,6 @@ const blocks = [
   ]
 ];
 
-let starting = false;
 var map = generateMap();
 
 let players = {};
@@ -100,7 +99,7 @@ io.on("connection", function(socket) {
   }
 
   socket.on("move", (data) => {
-    if (starting) return;
+    if (state === State.Starting) return;
 
     const {x, y} = data;
     const player = players[socket.id];
@@ -122,7 +121,8 @@ io.on("connection", function(socket) {
   })
 
   socket.on("fire", ({ shot, oldHeight, oldWidth }) => {
-    if (starting) return;
+    if (state !== State.Playing) return;
+
     const player = players[socket.id];
     player.shot = shot;
     socket.broadcast.emit("fire", {
@@ -133,7 +133,7 @@ io.on("connection", function(socket) {
   });
 
   socket.on("kill", id => {
-    if (starting) return;
+    if (state !== State.Playing) return;
 
     io.emit("dead", id);
     const player = players[id];
@@ -164,7 +164,7 @@ io.on("connection", function(socket) {
   }
 
   function startGameCountdown() {
-    if (starting) {
+    if (state === State.Starting) {
       return;
     }
 
@@ -174,7 +174,6 @@ io.on("connection", function(socket) {
 
     io.emit("gameData", players);
 
-    starting = true;
     countdown = COUNTDOWN;
     state = State.Starting;
     gameCountdown();
@@ -189,7 +188,6 @@ io.on("connection", function(socket) {
       return;
     }
 
-    starting = false;
     state = State.Playing;
 
     for (const id in players) {
