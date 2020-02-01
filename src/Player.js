@@ -49,7 +49,7 @@ export default class Player {
             continue;
           }
 
-          if (!pl.me && Math.sqrt((pl.x- currentX)**2 + (pl.y - currentY)**2) < 25) {
+          if (!pl.me && Math.sqrt((pl.x- currentX)**2 + (pl.y - currentY)**2) < PLAYER_RADIUS) {
             this.socket.emit("kill", pl.id);
             return {x: currentX, y: currentY};
           }
