@@ -130,7 +130,8 @@ io.on("connection", function(socket) {
     for (const id in players) {
       if (Date.now() - players[id].lastReq > 10000) {
         if (!players[id].dead) {
-          delete players.id;
+          io.emit("dead", id);
+          delete players[id];
         }
       }
     }
