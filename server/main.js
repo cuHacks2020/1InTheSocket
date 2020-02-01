@@ -5,6 +5,7 @@ var io = require("socket.io")(server);
 var path = require("path");
 const width = 9;
 const height = 16;
+const COUNTDOWN = 5;
 const blocks = [
   [
     [0, 1, 0],
@@ -42,9 +43,11 @@ const blocks = [
     [1, 1, 1]
   ]
 ];
+
+let starting = false;
 var map = generateMap();
 
-let players = [];
+let players = {};
 
 const PORT = process.env.PORT || 80;
 server.listen(PORT);
@@ -55,36 +58,52 @@ const public = path.join(__dirname, "..", "public");
 
 app.use(express.static(public));
 
-io.on("connection", function(socket) {
-  let x, y;
+const State = {
+  Playing: 'Playing',
+  Spectating: 'Spectating',
+  Starting: 'Starting',
+  Waiting: 'Waiting'
+}
 
+let state = State.Waiting;
+let countdown = COUNTDOWN;
+// let buffer = 0;
+
+io.on("connection", function(socket) {
   socket.emit("map", map);
 
-  while (!x || map[x][y] === 1) {
-    x = Math.floor(Math.random() * height);
-    y = Math.floor(Math.random() * width);
-  }
-
-  x = x + 0.5;
-  y = y + 0.5;
-
-  players.push({
-    id: socket.id,
-    x,
-    y,
+  players[socket.id] = {
+    x: 0,
+    y: 0,
     dx: 0,
     dy: 0,
-    shot: { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 }
-  });
+    shot: { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 },
+    id: socket.id,
+    dead: true
+  };
 
-  socket.emit("startingPos", { x, y });
+  console.log(`New connection: ${Object.keys(players).length} players now connected.`);
 
-  console.log(`New connection: ${players.length} players now connected.`);
+  switch(state) {
+    case State.Waiting:
+      if (Object.keys(players).length > 1) {
+        startGameCountdown();
+      }
+      socket.emit("state", State.Waiting);
+      break;
+    case State.Starting:
+      socket.emit("state", State.Starting, countdown);
+      break;
+    case State.Playing:
+      socket.emit("state", State.Spectating)
+      break;
+  }
 
-  let buffer = 0;
   socket.on("move", (data) => {
+    if (starting) return;
+
     const {x, y} = data;
-    const player = players.find(({id}) => id === socket.id);
+    const player = players[socket.id];
 
     if (!player) return;
 
@@ -93,16 +112,18 @@ io.on("connection", function(socket) {
     player.x = x;
     player.y = y;
 
-    // simulate lag
-    // setTimeout(() => socket.emit("gameData", players), 5000); 
-    buffer++;
-    if (buffer > 2) {
-      io.emit("gameData", players);
-    }
+    // buffer++;
+    // if (buffer > 2) {
+      // buffer = 0;
+    io.emit("gameData", players);
+    // }
+
+    checkState();
   })
 
   socket.on("fire", ({ shot, oldHeight, oldWidth }) => {
-    const player = players.find(({ id }) => id === socket.id);
+    if (starting) return;
+    const player = players[socket.id];
     player.shot = shot;
     socket.broadcast.emit("fire", {
       player: player,
@@ -112,8 +133,10 @@ io.on("connection", function(socket) {
   });
 
   socket.on("kill", id => {
+    if (starting) return;
+
     io.emit("dead", id);
-    const player = players.find((player) => player.id === id);
+    const player = players[id];
     if (player) {
       player.dead = true;
     }
@@ -121,10 +144,78 @@ io.on("connection", function(socket) {
 
   socket.on("disconnect", data => {
     console.log("Disconnect");
-    players = players.filter(({ id }) => id !== socket.id);
-    console.log(`Disconnection: ${players.length} players now connected.`);
+    delete players[socket.id];
+    console.log(`Disconnection: ${Object.keys(players).length} players now connected.`);
+    checkState();
   });
+
+  function onStart(id) {
+    let x,y;
+
+    while (!x || map[x][y] === 1) {
+      x = Math.floor(Math.random() * height);
+      y = Math.floor(Math.random() * width);
+    }
+  
+    x = x + 0.5;
+    y = y + 0.5;
+  
+    io.to(`${id}`).emit("startingPos", { x, y });
+  }
+
+  function startGameCountdown() {
+    if (starting) {
+      return;
+    }
+
+    for (const id in players) {
+      players[id].dead = false;
+    }
+
+    io.emit("gameData", players);
+
+    starting = true;
+    countdown = COUNTDOWN;
+    state = State.Starting;
+    gameCountdown();
+  }
+
+  function gameCountdown() {
+    if (countdown > 0) {
+      countdown--;
+      io.emit("state", State.Starting, countdown);
+
+      setTimeout(gameCountdown, 1000);
+      return;
+    }
+
+    starting = false;
+    state = State.Playing;
+
+    for (const id in players) {
+      onStart(id);
+    }
+  }
+
+  function checkState() {
+    let live = 0;
+    for (const [_, player] of Object.entries(players)) {
+      if (!player.dead) live++;
+    }
+
+    if (live <= 1) {
+      state = State.Waiting;
+      if (Object.keys(players).length > 1) {
+        startGameCountdown();
+      }
+
+      io.emit("state", state);
+    }
+    console.log(live);
+  }
 });
+
+
 
 // < ----- Map Generation ----- >
 

@@ -4,17 +4,20 @@ import Player from "./Player";
 const blockHeight = window.innerHeight / 9;
 const blockWidth = window.innerWidth / 16;
 
+const State = {
+  Playing: "Playing",
+  Spectating: "Spectating",
+  Starting: "Starting",
+  Waiting: "Waiting"
+};
+
 export default class Game {
   constructor() {
-    this.spectate = false;
+    this.me = null;
+    this.state = State.Waiting;
+    this.countdown = 0;
 
-    this.checkWallCollisionPlayer = (
-      x,
-      y,
-      r,
-      windowWidth,
-      windowHeight
-    ) => {
+    this.checkWallCollisionPlayer = (x, y, r, windowWidth, windowHeight) => {
       if (!this.map) return;
 
       let playerXRight = x + r;
@@ -46,62 +49,100 @@ export default class Game {
   async init() {
     const socket = await this.connect();
 
-    this.players = [new Player(socket)];
-    this.players[0].allPlayers = this.players;
+    this.players = {};
+    this.players[socket.id] = new Player(socket);
+    this.me = this.players[socket.id];
+    this.me.iMap = this.map;
+    this.me.me = true;
+    this.me.allPlayers = this.players;
   }
 
   async connect() {
     const socket = io();
 
-    socket.on("map", (mapObject, x, y) => {
-      this.map = mapObject;
-      this.x = x;
-      this.y = y;
-
-      for (let player of this.players) {
-        player.iMap = mapObject;
-      }
-    });
-
     await new Promise(resolve => {
+      let connections = Array(3);
+      const check = () => {
+        if (connections[0] && connections[1] && connections[2]) {
+          resolve();
+        }
+      }
+
       socket.on("connect", () => {
-        resolve();
+        connections[0] = true;
+        check();
+      });
+
+      socket.on("map", (mapObject, x, y) => {
+        this.map = mapObject;
+        this.x = x;
+        this.y = y;
+
+        connections[1] = true;
+        check();
+      });
+
+      socket.on("state", (state, countdown) => {
+        this.state = state;
+        if (countdown) {
+          this.countdown = countdown;
+        }
+
+        connections[2] = true;
+        check();
       });
     });
 
-    socket.on("dead", (id) => {
-      if (id === socket.id) { 
-        this.spectate = true;
-        this.players.find(({me}) => me).dead = true;
+    socket.on("startingPos", ({ x, y }) => {
+      for (const [_, player] of Object.entries(this.players)) {
+        if (player.me) {
+          player.x = x * blockWidth;
+          player.y = y * blockHeight;
+          break;
+        }
+      }
+
+      this.state = State.Playing;
+    });
+
+    socket.on("dead", id => {
+      if (id === socket.id) {
+        this.state = State.Spectating;
       }
     });
 
     socket.on("gameData", data => {
       const allowedServerDivergencePx = 0.5;
 
-      const receivedIds = data.map(({ id }) => id);
-      this.players = this.players.filter(({ id }) => receivedIds.includes(id));
+      const newIds = Object.keys(data);
 
-      // debugger;
-      for (const player of data) {
-        const playerObj = this.players.find(({ id }) => id === player.id);
+      // Remove disconnected players
+      for (const id of Object.keys(this.players)) {
+        if (!newIds.includes(id)) {
+          delete this.players[id];
+        }
+      }
 
-        if (playerObj && playerObj.me) {
-          playerObj.colour = player.colour;
+      for (const playerId of newIds) {
+        const newPlayerData = data[playerId];
+        const currentPlayer = this.players[playerId];
+
+        if (currentPlayer && currentPlayer.me) {
+          currentPlayer.colour = newPlayerData.colour;
           continue;
         }
 
-        if (playerObj) {
-          const { dx, dy, y, x, dead} = player;
+        if (currentPlayer) {
+          const { dx, dy, y, x, dead } = newPlayerData;
           if (dead) {
-            playerObj.dead = true;
+            currentPlayer.dead = true;
             continue;
           }
-          const serverDiffX = playerObj.x - x;
-          const serverDiffY = playerObj.y - y;
+          const serverDiffX = currentPlayer.x - x;
+          const serverDiffY = currentPlayer.y - y;
 
           // Store last movement
-          playerObj.lastMovement = {
+          currentPlayer.lastMovement = {
             horizontal: Math.sign(dx),
             vertical: Math.sign(dy)
           };
@@ -110,22 +151,21 @@ export default class Game {
             Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
             allowedServerDivergencePx
           ) {
-            playerObj.x = player.x * blockWidth;
-            playerObj.y = player.y * blockHeight;
+            currentPlayer.x = x * blockWidth;
+            currentPlayer.y = y * blockHeight;
           }
 
           continue;
         }
 
-        this.players.push(
-          new Player(
-            null,
-            player.id,
-            player.x * blockWidth,
-            player.y * blockHeight
-          )
+        this.players[playerId] = new Player(
+          null,
+          playerId,
+          newPlayerData.x * blockWidth,
+          newPlayerData.y * blockHeight
         );
-        this.players[0].allPlayers = this.players;
+        this.players[playerId].iMap = this.map;
+        this.players[playerId].allPlayers = this.players;
       }
     });
 
@@ -133,7 +173,7 @@ export default class Game {
       console.log("received fire");
       console.log(player, oldWidth, oldHeight);
 
-      const playerObj = this.players.find(({ id }) => id === player.id);
+      const playerObj = this.players[player.id];
 
       playerObj.shot = {
         x1: (player.shot.x1 * window.innerWidth) / oldWidth,
@@ -172,6 +212,7 @@ export default class Game {
       this.drawMap(p, windowWidth, windowHeight, pg);
     }
 
+    // Draw cursor
     // const r = 30;
     // p.stroke("white");
     // p.strokeWeight(1);
@@ -181,22 +222,69 @@ export default class Game {
     // p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
     // p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
 
-    let me = null;
-    this.players.forEach(player => {
-      if (player.dead) {
-        return;
+    for (const [_, player] of Object.entries(this.players)) {
+      if (player.dead || (player.me && this.state !== State.Playing)) {
+        continue;
       }
-      player.draw(p, this, pg, this.spectate); 
-      if (player.me) me = player;
-    });
 
-    if (this.spectate) {
-      p.image(pg, 0, 0, windowWidth, windowHeight);
-    } else {
+      player.draw(p, this, pg, this.state);
+    }
+
+    if (this.state === State.Playing) {
       const aspect = window.innerWidth / window.innerHeight;
       const portHeight = 425;
       const portWidth = portHeight * aspect;
-      p.image(pg, 0, 0, windowWidth, windowHeight, me.x - portWidth / 2, me.y - portHeight / 2, portWidth, portHeight);
+
+      p.image(
+        pg,
+        0,
+        0,
+        windowWidth,
+        windowHeight,
+        this.me.x - portWidth / 2,
+        this.me.y - portHeight / 2,
+        portWidth,
+        portHeight
+      );
+
+      return;
+    }
+    
+    p.image(pg, 0, 0, windowWidth, windowHeight);
+    this.drawGameState(p);
+  }
+
+  drawGameState(p) {
+    p.textSize(80);
+    p.textAlign(p.CENTER, p.CENTER);
+
+    switch (this.state) {
+      case State.Spectating:
+        p.fill("rgba(25, 161, 191, 0.20)");
+        p.text("Spectating", window.innerWidth / 2, blockHeight / 2);
+        break;
+      case State.Waiting:
+        p.fill("rgba(25, 161, 191, 0.5)");
+        p.text(
+          "Waiting for players...",
+          window.innerWidth / 2,
+          blockHeight / 2
+        );
+        break;
+      case State.Starting:
+        p.textSize(120);
+        p.fill("rgba(191, 25, 25, 0.9)");
+        p.text(
+          `Starting in`,
+          window.innerWidth / 2,
+          window.innerHeight / 2 - 60
+        );
+        p.text(
+          this.countdown || 'wtf',
+          window.innerWidth / 2,
+          window.innerHeight / 2 + 60
+        );
+        break;
     }
   }
 }
