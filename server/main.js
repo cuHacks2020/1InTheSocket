@@ -56,7 +56,7 @@ const public = path.join(__dirname, "..", "public");
 app.use(express.static(public));
 
 io.on("connection", function(socket) {
-  let x,y;
+  let x, y;
 
   socket.emit("map", map);
 
@@ -73,16 +73,17 @@ io.on("connection", function(socket) {
     x,
     y,
     dx: 0,
-    dy: 0
+    dy: 0,
+    shot: { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 }
   });
 
-  socket.emit("startingPos", {x, y});
+  socket.emit("startingPos", { x, y });
 
   console.log(`New connection: ${players.length} players now connected.`);
 
-  socket.on("move", (data) => {
-    const {x, y} = data;
-    const player = players.find(({id}) => id === socket.id);
+  socket.on("move", data => {
+    const { x, y } = data;
+    const player = players.find(({ id }) => id === socket.id);
 
     if (!player) return;
 
@@ -92,18 +93,27 @@ io.on("connection", function(socket) {
     player.y = y;
 
     // simulate lag
-    // setTimeout(() => socket.emit("gameData", players), 5000); 
+    // setTimeout(() => socket.emit("gameData", players), 5000);
     socket.emit("gameData", players);
-  })
+  });
 
+  socket.on("fire", ({ shot, oldHeight, oldWidth }) => {
+    const player = players.find(({ id }) => id === socket.id);
+    player.shot = shot;
+    socket.broadcast.emit("fire", {
+      player: player,
+      oldHeight: oldHeight,
+      oldWidth: oldWidth
+    });
+  });
 
   socket.on("kill", id => {
     io.emit("dead", id);
-  })
+  });
 
   socket.on("disconnect", data => {
     console.log("Disconnect");
-    players = players.filter(({id}) => id !== socket.id);
+    players = players.filter(({ id }) => id !== socket.id);
     console.log(`Disconnection: ${players.length} players now connected.`);
   });
 });
@@ -156,4 +166,3 @@ function rotateBlock(block) {
   }
   return rotated;
 }
-
