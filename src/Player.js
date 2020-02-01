@@ -3,7 +3,7 @@ const blockWidth = window.innerWidth / 16;
 const SPEED = 0.07;
 const speed_v = SPEED * blockHeight;
 const speed_h = SPEED * blockWidth;
-const PLAYER_RADIUS = window.innerWidth / 75;
+const PLAYER_RADIUS = window.innerWidth / 100;
 
 export default class Player {
   constructor(socket = null, socketId = null, x = 0, y = 0) {

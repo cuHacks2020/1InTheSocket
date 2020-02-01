@@ -74,11 +74,12 @@ export default class Game {
     })
 
     socket.on("gameData", data => {
-      const allowedServerDivergencePx = 30;
+      const allowedServerDivergencePx = 0.5;
 
       const receivedIds = data.map(({ id }) => id);
       this.players = this.players.filter(({ id }) => receivedIds.includes(id));
 
+      // debugger;
       for (const player of data) {
         const playerObj = this.players.find(({ id }) => id === player.id);
 
@@ -88,9 +89,9 @@ export default class Game {
         }
 
         if (playerObj) {
-          const { dx, dy } = player;
-          const serverDiffX = playerObj.x - player.x;
-          const serverDiffY = playerObj.y - player.y;
+          const { dx, dy, y, x } = player;
+          const serverDiffX = playerObj.x - x;
+          const serverDiffY = playerObj.y - y;
 
           // Store last movement
           playerObj.lastMovement = {
@@ -161,7 +162,7 @@ export default class Game {
     });
 
     const aspect = window.innerWidth / window.innerHeight;
-    const portHeight = 350;
+    const portHeight = 425;
     const portWidth = portHeight * aspect;
     p.image(pg, 0, 0, windowWidth, windowHeight, me.x - portWidth / 2, me.y - portHeight / 2, portWidth, portHeight);
   }
