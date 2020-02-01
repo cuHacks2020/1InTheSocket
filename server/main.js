@@ -185,55 +185,55 @@ io.on("connection", function(socket) {
 
     checkState();
   });
-
-  function onStart(id) {
-    let x, y;
-
-    while (!x || map[x][y] === 1) {
-      x = Math.floor(Math.random() * height);
-      y = Math.floor(Math.random() * width);
-    }
-
-    x = x + 0.5;
-    y = y + 0.5;
-
-    players[id].lastReq = Date.now();
-
-    io.to(`${id}`).emit("startingPos", { x, y });
-  }
-
-  function startGameCountdown() {
-    if (state === State.Starting) {
-      return;
-    }
-
-    for (const id in players) {
-      players[id].dead = false;
-    }
-
-    io.emit("gameData", players);
-
-    countdown = COUNTDOWN;
-    state = State.Starting;
-    gameCountdown();
-  }
-
-  function gameCountdown() {
-    if (countdown > 0) {
-      countdown--;
-      io.emit("state", State.Starting, countdown);
-
-      setTimeout(gameCountdown, 1000);
-      return;
-    }
-
-    state = State.Playing;
-
-    for (const id in players) {
-      onStart(id);
-    }
-  }
 });
+
+function onStart(id) {
+  let x, y;
+
+  while (!x || map[x][y] === 1) {
+    x = Math.floor(Math.random() * height);
+    y = Math.floor(Math.random() * width);
+  }
+
+  x = x + 0.5;
+  y = y + 0.5;
+
+  players[id].lastReq = Date.now();
+
+  io.to(`${id}`).emit("startingPos", { x, y });
+}
+
+function startGameCountdown() {
+  if (state === State.Starting) {
+    return;
+  }
+
+  for (const id in players) {
+    players[id].dead = false;
+  }
+
+  io.emit("gameData", players);
+
+  countdown = COUNTDOWN;
+  state = State.Starting;
+  gameCountdown();
+}
+
+function gameCountdown() {
+  if (countdown > 0) {
+    countdown--;
+    io.emit("state", State.Starting, countdown);
+
+    setTimeout(gameCountdown, 1000);
+    return;
+  }
+
+  state = State.Playing;
+
+  for (const id in players) {
+    onStart(id);
+  }
+}
 
 function checkState() {
   let live = 0;
