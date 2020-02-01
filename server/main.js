@@ -89,6 +89,7 @@ setInterval(() => {
       }
     }
   
+    checkState();
     io.emit("gameData", players);
   }
 }, 3)
@@ -181,6 +182,7 @@ io.on("connection", function(socket) {
     console.log(
       `Disconnection: ${Object.keys(players).length} players now connected.`
     );
+
     checkState();
   });
 
@@ -231,23 +233,23 @@ io.on("connection", function(socket) {
       onStart(id);
     }
   }
-
-  function checkState() {
-    let live = 0;
-    for (const [_, player] of Object.entries(players)) {
-      if (!player.dead) live++;
-    }
-
-    if (live <= 1) {
-      state = State.Waiting;
-      if (Object.keys(players).length > 1) {
-        startGameCountdown();
-      }
-
-      io.emit("state", state);
-    }
-  }
 });
+
+function checkState() {
+  let live = 0;
+  for (const [_, player] of Object.entries(players)) {
+    if (!player.dead) live++;
+  }
+
+  if (live <= 1) {
+    state = State.Waiting;
+    if (Object.keys(players).length > 1) {
+      startGameCountdown();
+    }
+
+    io.emit("state", state);
+  }
+}
 
 // < ----- Map Generation ----- >
 
