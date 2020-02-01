@@ -49,7 +49,7 @@ let players = [];
 const PORT = process.env.PORT || 80;
 server.listen(PORT);
 
-console.log("GO to http://localhost:3000");
+console.log("Go to http://localhost:80");
 
 const public = path.join(__dirname, "..", "public");
 
@@ -99,7 +99,6 @@ io.on("connection", function(socket) {
 
   socket.on("kill", id => {
     io.emit("dead", id);
-    console.log(id);
   })
 
   socket.on("disconnect", data => {
