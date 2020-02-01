@@ -3,7 +3,7 @@ const blockWidth = window.innerWidth / 16;
 const SPEED = 0.07;
 const speed_v = SPEED * blockHeight;
 const speed_h = SPEED * blockWidth;
-const PLAYER_RADIUS = 25;
+const PLAYER_RADIUS = window.innerWidth / 75;
 
 export default class Player {
   constructor(socket = null, socketId = null, x = 0, y = 0) {
@@ -115,7 +115,7 @@ export default class Player {
 
     let initX = this.x;
     let initY = this.y;
-    this.advance(horizontal, vertical);
+    this.advance(horizontal, vertical, p.deltaTime);
 
     if (game.checkWallCollisionPlayer(
       this.x,
@@ -131,17 +131,19 @@ export default class Player {
     this.socket.emit("move", { x: this.x / blockWidth, y: this.y / blockHeight });
   }
 
-  advance(horizontal, vertical) {
+  advance(horizontal, vertical, dt) {
+    const delta = (dt / 20)
+
     if (vertical && !horizontal) {
-      this.y += vertical * speed_v;
+      this.y += vertical * speed_v * delta;
     } else if (horizontal && !vertical) {
-      this.x += horizontal * speed_h;
+      this.x += horizontal * speed_h * delta;
     } else if (vertical && horizontal) {
       const adjustedSpeed_v = speed_v / Math.sqrt(2)
       const adjustedSpeed_h = speed_h / Math.sqrt(2)
 
-      this.x += adjustedSpeed_h * horizontal;
-      this.y += adjustedSpeed_v * vertical;
+      this.x += adjustedSpeed_h * horizontal * delta;
+      this.y += adjustedSpeed_v * vertical * delta;
     }
   }
 
