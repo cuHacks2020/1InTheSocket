@@ -99,7 +99,7 @@ export default class Game {
           };
 
           if (
-            (dx === 0 && dy === 0) || Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
+            Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
             allowedServerDivergencePx
           ) {
             playerObj.x = player.x * blockWidth;
@@ -119,10 +119,10 @@ export default class Game {
     return socket;
   }
 
-  drawMap(p, windowWidth, windowHeight) {
-    p.fill(0, 0);
-    p.strokeWeight(1);
-    p.stroke("white");
+  drawMap(p, windowWidth, windowHeight, pg) {
+    pg.fill(0, 0);
+    pg.strokeWeight(1);
+    pg.stroke("white");
 
     let gridXLength = windowWidth / 16;
     let gridYLength = windowHeight / 9;
@@ -130,32 +130,39 @@ export default class Game {
     for (let i = 0; i < this.map.length; i++) {
       for (let j = 0; j < this.map[0].length; j++) {
         if (this.map[i][j] === 1) {
-          p.rect(i * gridXLength, j * gridYLength, gridXLength, gridYLength);
+          pg.rect(i * gridXLength, j * gridYLength, gridXLength, gridYLength);
         }
       }
     }
   }
 
-  draw(p, windowWidth, windowHeight) {
-    p.background(40);
+  draw(p, windowWidth, windowHeight, pg) {
+    pg.background(40);
+    p.background(0);
 
     if (this.map) {
-      this.drawMap(p, windowWidth, windowHeight);
+      this.drawMap(p, windowWidth, windowHeight, pg);
     }
 
-    const r = 30;
-    p.stroke("white");
-    p.strokeWeight(1);
-    p.noCursor();
-    p.fill(0, 0);
-    p.ellipse(p.mouseX, p.mouseY, r, r);
-    p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
-    p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
+    // const r = 30;
+    // p.stroke("white");
+    // p.strokeWeight(1);
+    // p.noCursor();
+    // p.fill(0, 0);
+    // p.ellipse(p.mouseX, p.mouseY, r, r);
+    // p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
+    // p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
 
 
+    let me = null;
     this.players.forEach(player => {
-      player.draw(p, this);
+      player.draw(p, this, pg); 
+      if (player.me) me = player;
     });
 
+    const aspect = window.innerWidth / window.innerHeight;
+    const portHeight = 350;
+    const portWidth = portHeight * aspect;
+    p.image(pg, 0, 0, windowWidth, windowHeight, me.x - portWidth / 2, me.y - portHeight / 2, portWidth, portHeight);
   }
 }

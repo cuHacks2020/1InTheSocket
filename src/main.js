@@ -8,14 +8,16 @@ async function main() {
   await game.init();
 
   let main = p => {
+    let mapCanvas;
+
     p.setup = () => {
-      p.noCursor();
+      // p.noCursor();
       p.createCanvas(window.innerWidth, window.innerHeight);
-      p.background(40);
+      mapCanvas = p.createGraphics(window.innerWidth, window.innerHeight);
     };
 
     p.draw = () => {
-      game.draw(p, window.innerWidth, window.innerHeight);
+      game.draw(p, window.innerWidth, window.innerHeight, mapCanvas);
     };
   };
 
