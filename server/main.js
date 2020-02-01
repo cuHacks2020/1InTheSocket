@@ -47,6 +47,7 @@ const blocks = [
 var map = generateMap();
 
 let players = {};
+let leaderboard = [];
 
 const PORT = process.env.PORT || 80;
 server.listen(PORT);
@@ -116,6 +117,8 @@ io.on("connection", function(socket) {
   console.log(
     `New connection: ${Object.keys(players).length} players now connected.`
   );
+  
+  io.emit("leaderboard", leaderboard);
 
   switch (state) {
     case State.Waiting:
@@ -167,6 +170,9 @@ io.on("connection", function(socket) {
 
     io.emit("dead", id);
     const player = players[id];
+    let leaderPlayer = leaderboards.find((player) => player.id === socket.id);
+    leaderPlayer.score++;
+    io.emit("leaderboard", leaderboard);
     if (player) {
       player.dead = true;
     }
@@ -176,6 +182,10 @@ io.on("connection", function(socket) {
     const player = players[socket.id];
     player.username = username;
     player.colour = colour;
+    leaderboard.push({
+      id: socket.id,
+      score: 0,
+    });
     io.emit("gameData", players);
   });
 
@@ -187,6 +197,9 @@ io.on("connection", function(socket) {
     );
 
     checkState();
+    leaderboard = leaderboard.filter((player) => player.id !== socket.id);
+    io.emit("leaderboard", leaderboard);
+    console.log(`Disconnection: ${players.length} players now connected.`);
   });
 });
 
