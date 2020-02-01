@@ -50,7 +50,7 @@ export default class Player {
         }
 
         for (const [id, player] of Object.entries(this.allPlayers)) {
-          if (player.me) {
+          if (player.me || player.dead) {
             continue;
           }
 
