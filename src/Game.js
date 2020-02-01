@@ -1,29 +1,23 @@
 import io from "socket.io-client";
 import Player from "./Player";
 
-const blockHeight = window.innerHeight / 9; 
+const blockHeight = window.innerHeight / 9;
 const blockWidth = window.innerWidth / 16;
 
 export default class Game {
   constructor() {
-    this.checkWallCollisionPlayer = (
-      x,
-      y,
-      r,
-      windowWidth,
-      windowHeight
-    ) => {
+    this.checkWallCollisionPlayer = (x, y, r, windowWidth, windowHeight) => {
       if (!this.map) return;
 
       let playerXRight = x + r;
       let playerYBot = y + r;
       const playerXLeft = x - r;
       const playerYTop = y - r;
-      
-      let blockXL = Math.floor((playerXLeft) / (windowWidth / 16));
-      let blockYT = Math.floor((playerYTop) / (windowHeight / 9));
-      let blockXR = Math.floor((playerXRight) / (windowWidth / 16));
-      let blockYB = Math.floor((playerYBot) / (windowHeight / 9));
+
+      let blockXL = Math.floor(playerXLeft / (windowWidth / 16));
+      let blockYT = Math.floor(playerYTop / (windowHeight / 9));
+      let blockXR = Math.floor(playerXRight / (windowWidth / 16));
+      let blockYB = Math.floor(playerYBot / (windowHeight / 9));
 
       if (blockXL < 0 || blockYT < 0 || blockXR > 15 || blockYB > 8)
         return true;
@@ -55,23 +49,23 @@ export default class Game {
       this.map = mapObject;
       this.x = x;
       this.y = y;
- 
+
       for (let player of this.players) {
         player.iMap = mapObject;
       }
     });
 
-    await new Promise((resolve) => {
+    await new Promise(resolve => {
       socket.on("connect", () => {
         resolve();
       });
     });
 
-    socket.on("dead", (id) => {
-      if (id === socket.id) { 
+    socket.on("dead", id => {
+      if (id === socket.id) {
         window.location.reload();
       }
-    })
+    });
 
     socket.on("gameData", data => {
       const allowedServerDivergencePx = 0.5;
@@ -111,10 +105,30 @@ export default class Game {
         }
 
         this.players.push(
-          new Player(null, player.id, player.x * blockWidth, player.y * blockHeight)
+          new Player(
+            null,
+            player.id,
+            player.x * blockWidth,
+            player.y * blockHeight
+          )
         );
         this.players[0].allPlayers = this.players;
       }
+    });
+
+    socket.on("fire", ({ player, oldWidth, oldHeight }) => {
+      console.log("received fire");
+      console.log(player, oldWidth, oldHeight);
+
+      const playerObj = this.players.find(({ id }) => id === player.id);
+
+      playerObj.shot = {
+        x1: (player.shot.x1 * window.innerWidth) / oldWidth,
+        x2: (player.shot.x2 * window.innerWidth) / oldWidth,
+        y1: (player.shot.y1 * window.innerHeight) / oldHeight,
+        y2: (player.shot.y2 * window.innerHeight) / oldHeight,
+        alpha: player.shot.alpha
+      };
     });
 
     return socket;
@@ -154,16 +168,25 @@ export default class Game {
     // p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
     // p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
 
-
     let me = null;
     this.players.forEach(player => {
-      player.draw(p, this, pg); 
+      player.draw(p, this, pg);
       if (player.me) me = player;
     });
 
     const aspect = window.innerWidth / window.innerHeight;
     const portHeight = 425;
     const portWidth = portHeight * aspect;
-    p.image(pg, 0, 0, windowWidth, windowHeight, me.x - portWidth / 2, me.y - portHeight / 2, portWidth, portHeight);
+    p.image(
+      pg,
+      0,
+      0,
+      windowWidth,
+      windowHeight,
+      me.x - portWidth / 2,
+      me.y - portHeight / 2,
+      portWidth,
+      portHeight
+    );
   }
 }

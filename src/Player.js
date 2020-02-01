@@ -1,4 +1,4 @@
-const blockHeight = window.innerHeight / 9; 
+const blockHeight = window.innerHeight / 9;
 const blockWidth = window.innerWidth / 16;
 const SPEED = 0.07;
 const speed_v = SPEED * blockHeight;
@@ -13,11 +13,11 @@ export default class Player {
     this.me = !socketId;
     this.id = socketId || socket.id;
     this.lastMovement = { horizontal: 0, vertical: 0 };
-    this.shot = {x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0};
+    this.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
     this.hasShot = true;
 
     if (socket) {
-      socket.on('startingPos', ({x,y}) => {
+      socket.on("startingPos", ({ x, y }) => {
         this.x = x * blockWidth;
         this.y = y * blockHeight;
       });
@@ -25,14 +25,22 @@ export default class Player {
 
     // Checks if there is wall between two set of points
     // Player position and given x y
-    this.checkWallCollisionBullet = (p) => {
+    this.checkWallCollisionBullet = p => {
       if (!this.allPlayers) return;
 
       let currentX = this.x;
       let currentY = this.y;
 
-      let angleDegrees = Math.atan2(p.mouseY - window.innerHeight / 2, p.mouseX - window.innerWidth / 2);
-      while (currentX > 0 && currentX < window.innerWidth && currentY > 0 && currentY < window.innerHeight) {
+      let angleDegrees = Math.atan2(
+        p.mouseY - window.innerHeight / 2,
+        p.mouseX - window.innerWidth / 2
+      );
+      while (
+        currentX > 0 &&
+        currentX < window.innerWidth &&
+        currentY > 0 &&
+        currentY < window.innerHeight
+      ) {
         currentX += Math.cos(angleDegrees);
         currentY += Math.sin(angleDegrees);
 
@@ -40,7 +48,11 @@ export default class Player {
           break;
         }
 
-        if (this.iMap[Math.floor(currentX / (window.innerWidth / 16))][Math.floor(currentY / (window.innerHeight / 9))] === 1) {
+        if (
+          this.iMap[Math.floor(currentX / (window.innerWidth / 16))][
+            Math.floor(currentY / (window.innerHeight / 9))
+          ] === 1
+        ) {
           break;
         }
 
@@ -49,19 +61,23 @@ export default class Player {
             continue;
           }
 
-          if (!pl.me && Math.sqrt((pl.x- currentX)**2 + (pl.y - currentY)**2) < PLAYER_RADIUS) {
+          if (
+            !pl.me &&
+            Math.sqrt((pl.x - currentX) ** 2 + (pl.y - currentY) ** 2) <
+              PLAYER_RADIUS
+          ) {
             this.socket.emit("kill", pl.id);
-            return {x: currentX, y: currentY};
+            return { x: currentX, y: currentY };
           }
         }
       }
-      return {x: currentX, y: currentY};
-    }
+      return { x: currentX, y: currentY };
+    };
   }
 
   draw(p, game, pg) {
     this.tick(p, game);
-    
+    const shotColour = this.me ? "rgba(0,0,255," : "rgba(255,0,0,";
     if (!this.me) {
       pg.stroke("red");
       pg.fill([255, 0, 0, 50]);
@@ -74,35 +90,38 @@ export default class Player {
     pg.ellipse(this.x, this.y, PLAYER_RADIUS * 2);
 
     pg.strokeWeight(5);
-    if (this.me) {
-      pg.stroke(`rgba(0,0,255,${this.shot.alpha})`);
-      if (this.shot.alpha > 0.02)
-      {
-        this.shot.alpha -= 0.02;
-      }
-      pg.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
-      pg.alpha = 1;
+
+    pg.stroke(`${shotColour}${this.shot.alpha})`);
+    if (this.shot.alpha > 0.02) {
+      this.shot.alpha -= 0.02;
     }
+    pg.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
+    pg.alpha = 1;
   }
 
   tick(p, game) {
     this.doMovement(p, game);
-
     if (!p.mouseClicked) {
       p.mouseClicked = () => {
         if (this.hasShot) {
           const endCoords = this.checkWallCollisionBullet(p);
-  
-          const angle = Math.atan2(endCoords.y-this.y, endCoords.x-this.x)
+          console.log(endCoords);
+          const angle = Math.atan2(endCoords.y - this.y, endCoords.x - this.x);
           this.shot = {
             x1: this.x + Math.cos(angle) * PLAYER_RADIUS,
-            y1: this.y + Math.sin(angle) * PLAYER_RADIUS, 
+            y1: this.y + Math.sin(angle) * PLAYER_RADIUS,
             x2: endCoords.x,
             y2: endCoords.y,
             alpha: 1
-          }
+          };
+
+          this.socket.emit("fire", {
+            shot: this.shot,
+            oldWidth: window.innerWidth,
+            oldHeight: window.innerHeight
+          });
         }
-      }
+      };
     }
   }
 
@@ -118,32 +137,37 @@ export default class Player {
     let initY = this.y;
     this.advance(horizontal, vertical, p.deltaTime);
 
-    if (game.checkWallCollisionPlayer(
-      this.x,
-      this.y,
-      PLAYER_RADIUS,
-      window.innerWidth,
-      window.innerHeight
-    )) {
+    if (
+      game.checkWallCollisionPlayer(
+        this.x,
+        this.y,
+        PLAYER_RADIUS,
+        window.innerWidth,
+        window.innerHeight
+      )
+    ) {
       this.x = initX;
       this.y = initY;
     }
 
     if (this.me) {
-      this.socket.emit("move", { x: this.x / blockWidth, y: this.y / blockHeight });
+      this.socket.emit("move", {
+        x: this.x / blockWidth,
+        y: this.y / blockHeight
+      });
     }
   }
 
   advance(horizontal, vertical, dt) {
-    const delta = (dt / 20)
+    const delta = dt / 20;
 
     if (vertical && !horizontal) {
       this.y += vertical * speed_v * delta;
     } else if (horizontal && !vertical) {
       this.x += horizontal * speed_h * delta;
     } else if (vertical && horizontal) {
-      const adjustedSpeed_v = speed_v / Math.sqrt(2)
-      const adjustedSpeed_h = speed_h / Math.sqrt(2)
+      const adjustedSpeed_v = speed_v / Math.sqrt(2);
+      const adjustedSpeed_h = speed_h / Math.sqrt(2);
 
       this.x += adjustedSpeed_h * horizontal * delta;
       this.y += adjustedSpeed_v * vertical * delta;
