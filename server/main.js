@@ -78,6 +78,21 @@ let state = State.Waiting;
 let countdown = COUNTDOWN;
 // let buffer = 0;
 
+setInterval(() => {
+  if (Object.keys(players).length > 0) {
+    for (const id in players) {
+      if (Date.now() - players[id].lastReq > 10000) {
+        if (!players[id].dead) {
+          io.emit("dead", id);
+          delete players[id];
+        }
+      }
+    }
+  
+    io.emit("gameData", players);
+  }
+}, 3)
+
 io.on("connection", function(socket) {
   socket.emit("map", map);
 
@@ -126,17 +141,6 @@ io.on("connection", function(socket) {
     player.x = x;
     player.y = y;
     player.lastReq = Date.now();
-
-    for (const id in players) {
-      if (Date.now() - players[id].lastReq > 10000) {
-        if (!players[id].dead) {
-          io.emit("dead", id);
-          delete players[id];
-        }
-      }
-    }
-
-    io.emit("gameData", players);
 
     checkState();
   });
