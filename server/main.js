@@ -114,7 +114,6 @@ io.on("connection", function(socket) {
   socket.on("kill", id => {
     io.emit("dead", id);
     players.find((player) => player.id === id).dead = true;
-    socket.emit("gameData", players);
   })
 
   socket.on("disconnect", data => {
