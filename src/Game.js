@@ -6,7 +6,15 @@ const blockWidth = window.innerWidth / 16;
 
 export default class Game {
   constructor() {
-    this.checkWallCollisionPlayer = (x, y, r, windowWidth, windowHeight) => {
+    this.spectate = false;
+
+    this.checkWallCollisionPlayer = (
+      x,
+      y,
+      r,
+      windowWidth,
+      windowHeight
+    ) => {
       if (!this.map) return;
 
       let playerXRight = x + r;
@@ -61,9 +69,10 @@ export default class Game {
       });
     });
 
-    socket.on("dead", id => {
-      if (id === socket.id) {
-        window.location.reload();
+    socket.on("dead", (id) => {
+      if (id === socket.id) { 
+        this.spectate = true;
+        this.players.find(({me}) => me).dead = true;
       }
     });
 
@@ -83,7 +92,11 @@ export default class Game {
         }
 
         if (playerObj) {
-          const { dx, dy, y, x } = player;
+          const { dx, dy, y, x, dead} = player;
+          if (dead) {
+            playerObj.dead = true;
+            continue;
+          }
           const serverDiffX = playerObj.x - x;
           const serverDiffY = playerObj.y - y;
 
@@ -170,23 +183,20 @@ export default class Game {
 
     let me = null;
     this.players.forEach(player => {
-      player.draw(p, this, pg);
+      if (player.dead) {
+        return;
+      }
+      player.draw(p, this, pg, this.spectate); 
       if (player.me) me = player;
     });
 
-    const aspect = window.innerWidth / window.innerHeight;
-    const portHeight = 425;
-    const portWidth = portHeight * aspect;
-    p.image(
-      pg,
-      0,
-      0,
-      windowWidth,
-      windowHeight,
-      me.x - portWidth / 2,
-      me.y - portHeight / 2,
-      portWidth,
-      portHeight
-    );
+    if (this.spectate) {
+      p.image(pg, 0, 0, windowWidth, windowHeight);
+    } else {
+      const aspect = window.innerWidth / window.innerHeight;
+      const portHeight = 425;
+      const portWidth = portHeight * aspect;
+      p.image(pg, 0, 0, windowWidth, windowHeight, me.x - portWidth / 2, me.y - portHeight / 2, portWidth, portHeight);
+    }
   }
 }
