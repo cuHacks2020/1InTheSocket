@@ -170,7 +170,7 @@ io.on("connection", function(socket) {
 
     io.emit("dead", id);
     const player = players[id];
-    let leaderPlayer = leaderboards.find((player) => player.id === socket.id);
+    let leaderPlayer = leaderboard.find((player) => player.id === socket.id);
     leaderPlayer.score++;
     io.emit("leaderboard", leaderboard);
     if (player) {

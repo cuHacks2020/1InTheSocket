@@ -183,10 +183,11 @@ export default class Game {
     });
 
     socket.on("leaderboard", (leaderboard) => {
-      this.leaderboard = leaderboard;
-      this.leaderboard.sort((a,b) => {
-        return a.score > b.score;
-      })
+      this.leaderboard = [...leaderboard];
+      this.leaderboard = this.leaderboard.sort(function (a,b) {
+        return b.score - a.score;
+      });
+      console.log(this.leaderboard);
     })
 
     socket.on("fire", ({ player, oldWidth, oldHeight }) => {
@@ -317,14 +318,14 @@ export default class Game {
     p.textSize(windowWidth/40);
     p.fill(0,0,0,175);
     p.text('Leaderboard', windowWidth - windowWidth/5, 0, windowWidth/5, windowHeight/3);
-    
-    p.textSize(windowWidth/60);
+    p.textSize(windowWidth/100);
     let i = 1;
     for (let player of this.leaderboard) {
       if ( i === 6) {
         break;
       }
       p.text(player.id + ": " + player.score, windowWidth - windowWidth/5, windowWidth/40 + i*windowWidth/60);
+      i++;
     }
     
   }
