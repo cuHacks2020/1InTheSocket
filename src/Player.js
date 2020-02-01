@@ -3,7 +3,7 @@ const blockWidth = window.innerWidth / 16;
 const SPEED = 0.07;
 const speed_v = SPEED * blockHeight;
 const speed_h = SPEED * blockWidth;
-
+const PLAYER_RADIUS = 25;
 
 export default class Player {
   constructor(socket = null, socketId = null, x = 0, y = 0) {
@@ -70,8 +70,10 @@ export default class Player {
       p.fill([0, 0, 255, 50]);
     }
 
-    p.ellipse(this.x, this.y, 50);
+    p.strokeWeight(2);
+    p.ellipse(this.x, this.y, PLAYER_RADIUS * 2);
 
+    p.strokeWeight(5);
     if (this.me) {
       p.stroke(`rgba(0,0,255,${this.shot.alpha})`);
       if (this.shot.alpha > 0.02)
@@ -95,9 +97,10 @@ export default class Player {
       if (this.hasShot) {
         const endCoords = this.checkWallCollisionBullet(p);
 
+        const angle = Math.atan2(endCoords.y-this.y, endCoords.x-this.x)
         this.shot = {
-          x1: this.x,
-          y1: this.y, 
+          x1: this.x + Math.cos(angle) * PLAYER_RADIUS,
+          y1: this.y + Math.sin(angle) * PLAYER_RADIUS, 
           x2: endCoords.x,
           y2: endCoords.y,
           alpha: 1
@@ -117,8 +120,7 @@ export default class Player {
     if (game.checkWallCollisionPlayer(
       this.x,
       this.y,
-      horizontal * speed_h,
-      vertical * speed_v,
+      PLAYER_RADIUS,
       window.innerWidth,
       window.innerHeight
     )) {

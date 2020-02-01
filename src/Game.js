@@ -9,40 +9,34 @@ export default class Game {
     this.checkWallCollisionPlayer = (
       x,
       y,
-      diffX,
-      diffY,
+      r,
       windowWidth,
       windowHeight
     ) => {
       if (!this.map) return;
-      
-      const r = 25;
 
       let playerXRight = x + r;
       let playerYBot = y + r;
       const playerXLeft = x - r;
       const playerYTop = y - r;
-      let blockXL = Math.floor((playerXLeft + diffX) / (windowWidth / 16));
-      let blockYT = Math.floor((playerYTop + diffY) / (windowHeight / 9));
-      let blockXR = Math.floor((playerXRight + diffX) / (windowWidth / 16));
-      let blockYB = Math.floor((playerYBot + diffX) / (windowHeight / 9));
+      
+      let blockXL = Math.floor((playerXLeft) / (windowWidth / 16));
+      let blockYT = Math.floor((playerYTop) / (windowHeight / 9));
+      let blockXR = Math.floor((playerXRight) / (windowWidth / 16));
+      let blockYB = Math.floor((playerYBot) / (windowHeight / 9));
 
-      if (playerXRight > windowWidth - 50) {
-        return false;
-      }
-
-      if (blockXL < 0 || blockYT < 0 || blockXR > 19 || blockYB > 19)
+      if (blockXL < 0 || blockYT < 0 || blockXR > 15 || blockYB > 8)
         return true;
-      if (diffY != 0 || diffX != 0) {
-        if (
-          this.map[blockXL][blockYT] ||
-          this.map[blockXR][blockYT] ||
-          this.map[blockXL][blockYB] ||
-          this.map[blockXR][blockYB]
-        ) {
-          return true;
-        }
+
+      if (
+        this.map[blockXL][blockYT] ||
+        this.map[blockXR][blockYT] ||
+        this.map[blockXL][blockYB] ||
+        this.map[blockXR][blockYB]
+      ) {
+        return true;
       }
+
       return false;
     };
   }
@@ -80,7 +74,7 @@ export default class Game {
     })
 
     socket.on("gameData", data => {
-      const allowedServerDivergencePx = 100;
+      const allowedServerDivergencePx = 30;
 
       const receivedIds = data.map(({ id }) => id);
       this.players = this.players.filter(({ id }) => receivedIds.includes(id));
@@ -105,7 +99,7 @@ export default class Game {
           };
 
           if (
-            Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
+            (dx === 0 && dy === 0) || Math.sqrt(serverDiffX ** 2 + serverDiffY ** 2) >
             allowedServerDivergencePx
           ) {
             playerObj.x = player.x * blockWidth;
@@ -127,7 +121,7 @@ export default class Game {
 
   drawMap(p, windowWidth, windowHeight) {
     p.fill(0, 0);
-    p.strokeWeight(8);
+    p.strokeWeight(1);
     p.stroke("white");
 
     let gridXLength = windowWidth / 16;
@@ -150,7 +144,7 @@ export default class Game {
     }
 
     const r = 30;
-    p.stroke("blue");
+    p.stroke("white");
     p.strokeWeight(1);
     p.noCursor();
     p.fill(0, 0);
@@ -158,7 +152,6 @@ export default class Game {
     p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
     p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
 
-    p.strokeWeight(6);
 
     this.players.forEach(player => {
       player.draw(p, this);
