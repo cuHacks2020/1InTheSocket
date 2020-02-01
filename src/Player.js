@@ -1,14 +1,12 @@
-import io from "socket.io-client";
-
 const blockHeight = window.innerHeight / 9; 
 const blockWidth = window.innerWidth / 16;
 const SPEED = 0.07;
 const speed_v = SPEED * blockHeight;
 const speed_h = SPEED * blockWidth;
-
+const PLAYER_RADIUS = 25;
 
 export default class Player {
-  constructor(socket = null, socketId = null, x = 0, y = 0, map) {
+  constructor(socket = null, socketId = null, x = 0, y = 0) {
     this.x = x;
     this.y = y;
     this.socket = socket;
@@ -25,7 +23,7 @@ export default class Player {
       });
     }
 
-      // Checks if there is wall between two set of points
+    // Checks if there is wall between two set of points
     // Player position and given x y
     this.checkWallCollisionBullet = (p) => {
       if (!this.allPlayers) return;
@@ -61,55 +59,8 @@ export default class Player {
     }
   }
 
-  doOtherMovement(p) {
-    let {vertical, horizontal} = this.lastMovement;
-
-    if (vertical && !horizontal) {
-      this.y += vertical * speed_v;
-    } else if (horizontal && !vertical) {
-      this.x += horizontal * speed_h;
-    } else if (vertical && horizontal) {
-      const adjustedSpeed_v = speed_v / Math.sqrt(2)
-      const adjustedSpeed_h = speed_h / Math.sqrt(2)
-
-      this.x += adjustedSpeed_h * horizontal;
-      this.y += adjustedSpeed_v * vertical;
-    }
-  }
-
-  draw(p, g) {
-    if (this.me) {
-      let initX = this.x;
-      let initY = this.y;
-      if (this.doMovement(p, g)) {
-        this.x = initX;
-        this.y = initY;
-      }
-
-      p.mouseClicked = () => {
-        if (this.hasShot) {
-          const endCoords = this.checkWallCollisionBullet(p);
-
-          this.shot = {
-            x1: this.x,
-            y1: this.y, 
-            x2: endCoords.x,
-            y2: endCoords.y,
-            alpha: 1
-          }
-        }
-      }
-
-      p.stroke(`rgba(0,0,255,${this.shot.alpha})`);
-      if (this.shot.alpha > 0.02)
-      {
-        this.shot.alpha -= 0.02;
-      }
-      p.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
-      p.alpha = 1;
-    } else {
-      this.doOtherMovement(p);
-    }
+  draw(p, game) {
+    this.tick(p, game);
     
     if (!this.me) {
       p.stroke("red");
@@ -118,17 +69,69 @@ export default class Player {
       p.stroke("blue");
       p.fill([0, 0, 255, 50]);
     }
-    p.ellipse(this.x, this.y, 50);
+
+    p.strokeWeight(2);
+    p.ellipse(this.x, this.y, PLAYER_RADIUS * 2);
+
+    p.strokeWeight(5);
+    if (this.me) {
+      p.stroke(`rgba(0,0,255,${this.shot.alpha})`);
+      if (this.shot.alpha > 0.02)
+      {
+        this.shot.alpha -= 0.02;
+      }
+      p.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
+      p.alpha = 1;
+    }
   }
 
-  doMovement(p, g) {
-    let { vertical, horizontal } = this.lastMovement;
-
-    if (this.me) {
-      vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
-      horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
+  tick(p, game) {
+    if (!this.me) {
+      this.advance(this.lastMovement.horizontal, this.lastMovement.vertical);
+      return;
     }
 
+    this.doMovement(p, game);
+
+    p.mouseClicked = () => {
+      if (this.hasShot) {
+        const endCoords = this.checkWallCollisionBullet(p);
+
+        const angle = Math.atan2(endCoords.y-this.y, endCoords.x-this.x)
+        this.shot = {
+          x1: this.x + Math.cos(angle) * PLAYER_RADIUS,
+          y1: this.y + Math.sin(angle) * PLAYER_RADIUS, 
+          x2: endCoords.x,
+          y2: endCoords.y,
+          alpha: 1
+        }
+      }
+    }
+  }
+
+  doMovement(p, game) {
+    const vertical = Number(p.keyIsDown(83) - p.keyIsDown(87));
+    const horizontal = Number(p.keyIsDown(68) - p.keyIsDown(65));
+
+    let initX = this.x;
+    let initY = this.y;
+    this.advance(horizontal, vertical);
+
+    if (game.checkWallCollisionPlayer(
+      this.x,
+      this.y,
+      PLAYER_RADIUS,
+      window.innerWidth,
+      window.innerHeight
+    )) {
+      this.x = initX;
+      this.y = initY;
+    }
+
+    this.socket.emit("move", { x: this.x / blockWidth, y: this.y / blockHeight });
+  }
+
+  advance(horizontal, vertical) {
     if (vertical && !horizontal) {
       this.y += vertical * speed_v;
     } else if (horizontal && !vertical) {
@@ -140,34 +143,6 @@ export default class Player {
       this.x += adjustedSpeed_h * horizontal;
       this.y += adjustedSpeed_v * vertical;
     }
-    if (this.x > window.innerWidth) {
-      this.x = window.innerWidth;
-    }
-
-    if (this.x < 0) {
-      this.x = 0;
-    }
-
-    if (this.y > window.innerHeight) {
-      this.y = window.innerHeight;
-    }
-
-    if (this.y < 0) {
-      this.y = 0;
-    }
-
-    if (this.me) {
-      this.socket.emit("move", { x: this.x / blockWidth, y: this.y / blockHeight });
-    }
-
-    return g.checkWallCollisionPlayer(
-      this.x,
-      this.y,
-      horizontal * speed_h,
-      vertical * speed_v,
-      g.width,
-      g.height
-    );
   }
 
   getSocket() {
