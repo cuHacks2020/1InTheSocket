@@ -56,13 +56,23 @@ console.log("Go to http://localhost:80");
 const public = path.join(__dirname, "..", "public");
 
 app.use(express.static(public));
+app.get("/", mainMenu);
+app.get("/play", playGame);
+
+function mainMenu(req, res, next) {
+  res.status(200).sendFile("./menu.html", { root: public });
+}
+
+function playGame(req, res, next) {
+  res.status(200).sendFile("./game.html", { root: public });
+}
 
 const State = {
-  Playing: 'Playing',
-  Spectating: 'Spectating',
-  Starting: 'Starting',
-  Waiting: 'Waiting'
-}
+  Playing: "Playing",
+  Spectating: "Spectating",
+  Starting: "Starting",
+  Waiting: "Waiting"
+};
 
 let state = State.Waiting;
 let countdown = COUNTDOWN;
@@ -74,6 +84,8 @@ io.on("connection", function(socket) {
   players[socket.id] = {
     x: 0,
     y: 0,
+    username: "",
+    colour: { r: 0, g: 0, b: 255 },
     dx: 0,
     dy: 0,
     shot: { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 },
@@ -81,9 +93,11 @@ io.on("connection", function(socket) {
     dead: true
   };
 
-  console.log(`New connection: ${Object.keys(players).length} players now connected.`);
+  console.log(
+    `New connection: ${Object.keys(players).length} players now connected.`
+  );
 
-  switch(state) {
+  switch (state) {
     case State.Waiting:
       if (Object.keys(players).length > 1) {
         startGameCountdown();
@@ -94,14 +108,14 @@ io.on("connection", function(socket) {
       socket.emit("state", State.Starting, countdown);
       break;
     case State.Playing:
-      socket.emit("state", State.Spectating)
+      socket.emit("state", State.Spectating);
       break;
   }
 
-  socket.on("move", (data) => {
+  socket.on("move", data => {
     if (state === State.Starting) return;
 
-    const {x, y} = data;
+    const { x, y } = data;
     const player = players[socket.id];
 
     if (!player) return;
@@ -111,14 +125,10 @@ io.on("connection", function(socket) {
     player.x = x;
     player.y = y;
 
-    // buffer++;
-    // if (buffer > 2) {
-      // buffer = 0;
     io.emit("gameData", players);
-    // }
 
     checkState();
-  })
+  });
 
   socket.on("fire", ({ shot, oldHeight, oldWidth }) => {
     if (state !== State.Playing) return;
@@ -140,26 +150,35 @@ io.on("connection", function(socket) {
     if (player) {
       player.dead = true;
     }
-  })
+  });
+
+  socket.on("join", ({ username, colour }) => {
+    const player = players[socket.id];
+    player.username = username;
+    player.colour = colour;
+    io.emit("gameData", players);
+  });
 
   socket.on("disconnect", data => {
     console.log("Disconnect");
     delete players[socket.id];
-    console.log(`Disconnection: ${Object.keys(players).length} players now connected.`);
+    console.log(
+      `Disconnection: ${Object.keys(players).length} players now connected.`
+    );
     checkState();
   });
 
   function onStart(id) {
-    let x,y;
+    let x, y;
 
     while (!x || map[x][y] === 1) {
       x = Math.floor(Math.random() * height);
       y = Math.floor(Math.random() * width);
     }
-  
+
     x = x + 0.5;
     y = y + 0.5;
-  
+
     io.to(`${id}`).emit("startingPos", { x, y });
   }
 
@@ -211,8 +230,6 @@ io.on("connection", function(socket) {
     }
   }
 });
-
-
 
 // < ----- Map Generation ----- >
 

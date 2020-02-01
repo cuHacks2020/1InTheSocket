@@ -5,8 +5,17 @@ const speed_v = SPEED * blockHeight;
 const speed_h = SPEED * blockWidth;
 const PLAYER_RADIUS = window.innerWidth / 100;
 
+function convertHex(hash) {
+  const hex = hash.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  return { r, g, b };
+}
+
 export default class Player {
-  constructor(socket = null, socketId = null, x = 0, y = 0) {
+  constructor(socket = null, socketId = null, x = 0, y = 0, username = "") {
     this.x = x;
     this.y = y;
     this.socket = socket;
@@ -15,6 +24,15 @@ export default class Player {
     this.lastMovement = { horizontal: 0, vertical: 0 };
     this.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
     this.hasShot = true;
+    const urlParams = new URLSearchParams(window.location.search);
+    this.colour = window.location.hash
+      ? convertHex(window.location.hash)
+      : { r: 0, g: 0, b: 255 };
+    this.username = urlParams.get("user");
+
+    if (socket) {
+      socket.emit("join", { username: this.username, colour: this.colour });
+    }
 
     // Checks if there is wall between two set of points
     // Player position and given x y
@@ -70,23 +88,21 @@ export default class Player {
 
   draw(p, game, pg) {
     this.tick(p, game);
-    const shotColour = this.me ? "rgba(0,0,255," : "rgba(255,0,0,";
-    if (!this.me) {
-      pg.stroke("red");
-      pg.fill([255, 0, 0, 50]);
-    } else {
-      pg.stroke("blue");
-      pg.fill([0, 0, 255, 50]);
-    }
+
+    pg.stroke(this.colour.r, this.colour.g, this.colour.b);
+    pg.fill([this.colour.r, this.colour.g, this.colour.b, 50]);
 
     pg.strokeWeight(2);
     pg.ellipse(this.x, this.y, PLAYER_RADIUS * 2);
 
     pg.strokeWeight(5);
-
-    pg.stroke(`${shotColour}${this.shot.alpha})`);
+    pg.stroke(
+      `rgba(${this.colour.r}, ${this.colour.g}, ${this.colour.b}, ${this.shot.alpha})`
+    );
     if (this.shot.alpha > 0.02) {
       this.shot.alpha -= 0.02;
+    } else {
+      this.shot.alpha = 0;
     }
     pg.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
     pg.alpha = 1;
