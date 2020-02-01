@@ -209,7 +209,6 @@ io.on("connection", function(socket) {
 
       io.emit("state", state);
     }
-    console.log(live);
   }
 });
 

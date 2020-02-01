@@ -98,7 +98,6 @@ export default class Player {
       p.mouseClicked = () => {
         if (this.hasShot && !this.dead && this.me) {
           const endCoords = this.checkWallCollisionBullet(p);
-          console.log(endCoords);
           const angle = Math.atan2(endCoords.y - this.y, endCoords.x - this.x);
           this.shot = {
             x1: this.x + Math.cos(angle) * PLAYER_RADIUS,

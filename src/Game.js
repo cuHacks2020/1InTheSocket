@@ -100,6 +100,8 @@ export default class Game {
           player.y = y * blockHeight;
           break;
         }
+
+        player.lastMovement = {horizontal: 0, vertical: 0};
       }
 
       this.state = State.Playing;
@@ -134,10 +136,9 @@ export default class Game {
 
         if (currentPlayer) {
           const { dx, dy, y, x, dead } = newPlayerData;
-          if (dead) {
-            currentPlayer.dead = true;
-            continue;
-          }
+
+          currentPlayer.dead = dead;
+
           const serverDiffX = currentPlayer.x - x;
           const serverDiffY = currentPlayer.y - y;
 
@@ -170,9 +171,6 @@ export default class Game {
     });
 
     socket.on("fire", ({ player, oldWidth, oldHeight }) => {
-      console.log("received fire");
-      console.log(player, oldWidth, oldHeight);
-
       const playerObj = this.players[player.id];
 
       playerObj.shot = {
@@ -222,12 +220,14 @@ export default class Game {
     // p.line(p.mouseX, p.mouseY + r / 2, p.mouseX, p.mouseY - r / 2);
     // p.line(p.mouseX - r / 2, p.mouseY, p.mouseX + r / 2, p.mouseY);
 
-    for (const [_, player] of Object.entries(this.players)) {
-      if (player.dead || (player.me && this.state !== State.Playing)) {
-        continue;
+    if (this.state === State.Playing || this.state === State.Spectating) {
+      for (const [_, player] of Object.entries(this.players)) {
+        if (player.dead || (player.me && this.state !== State.Playing)) {
+          continue;
+        }
+  
+        player.draw(p, this, pg, this.state);
       }
-
-      player.draw(p, this, pg, this.state);
     }
 
     if (this.state === State.Playing) {
