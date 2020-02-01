@@ -81,9 +81,10 @@ io.on("connection", function(socket) {
 
   console.log(`New connection: ${players.length} players now connected.`);
 
-  socket.on("move", data => {
-    const { x, y } = data;
-    const player = players.find(({ id }) => id === socket.id);
+  let buffer = 0;
+  socket.on("move", (data) => {
+    const {x, y} = data;
+    const player = players.find(({id}) => id === socket.id);
 
     if (!player) return;
 
@@ -93,9 +94,12 @@ io.on("connection", function(socket) {
     player.y = y;
 
     // simulate lag
-    // setTimeout(() => socket.emit("gameData", players), 5000);
-    socket.emit("gameData", players);
-  });
+    // setTimeout(() => socket.emit("gameData", players), 5000); 
+    buffer++;
+    if (buffer > 2) {
+      io.emit("gameData", players);
+    }
+  })
 
   socket.on("fire", ({ shot, oldHeight, oldWidth }) => {
     const player = players.find(({ id }) => id === socket.id);
@@ -109,7 +113,9 @@ io.on("connection", function(socket) {
 
   socket.on("kill", id => {
     io.emit("dead", id);
-  });
+    players.find((player) => player.id === id).dead = true;
+    socket.emit("gameData", players);
+  })
 
   socket.on("disconnect", data => {
     console.log("Disconnect");
