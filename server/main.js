@@ -90,7 +90,8 @@ io.on("connection", function(socket) {
     dy: 0,
     shot: { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 },
     id: socket.id,
-    dead: true
+    dead: true,
+    lastReq: Date.now()
   };
 
   console.log(
@@ -113,7 +114,7 @@ io.on("connection", function(socket) {
   }
 
   socket.on("move", data => {
-    if (state === State.Starting) return;
+    if (state !== State.Playing) return;
 
     const { x, y } = data;
     const player = players[socket.id];
@@ -124,6 +125,13 @@ io.on("connection", function(socket) {
     player.dy = y - player.y;
     player.x = x;
     player.y = y;
+    player.lastReq = Date.now();
+
+    for (const id in players) {
+      if (Date.now() - players[id].lastReq > 10000) {
+        delete players.id;
+      }
+    }
 
     io.emit("gameData", players);
 
@@ -135,6 +143,7 @@ io.on("connection", function(socket) {
 
     const player = players[socket.id];
     player.shot = shot;
+    player.lastReq = Date.now();
     socket.broadcast.emit("fire", {
       player: player,
       oldHeight: oldHeight,
@@ -178,6 +187,8 @@ io.on("connection", function(socket) {
 
     x = x + 0.5;
     y = y + 0.5;
+
+    players[id].lastReq = Date.now();
 
     io.to(`${id}`).emit("startingPos", { x, y });
   }
