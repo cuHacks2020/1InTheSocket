@@ -16,17 +16,10 @@ export default class Player {
     this.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
     this.hasShot = true;
 
-    if (socket) {
-      socket.on("startingPos", ({ x, y }) => {
-        this.x = x * blockWidth;
-        this.y = y * blockHeight;
-      });
-    }
-
     // Checks if there is wall between two set of points
     // Player position and given x y
     this.checkWallCollisionBullet = p => {
-      if (!this.allPlayers) return;
+      if (!this.me) return;
 
       let currentX = this.x;
       let currentY = this.y;
@@ -56,17 +49,17 @@ export default class Player {
           break;
         }
 
-        for (const pl of this.allPlayers) {
-          if (pl.me) {
+        for (const [id, player] of Object.entries(this.allPlayers)) {
+          if (player.me || player.dead) {
             continue;
           }
 
           if (
-            !pl.me &&
-            Math.sqrt((pl.x - currentX) ** 2 + (pl.y - currentY) ** 2) <
+            !player.me &&
+            Math.sqrt((player.x - currentX) ** 2 + (player.y - currentY) ** 2) <
               PLAYER_RADIUS
           ) {
-            this.socket.emit("kill", pl.id);
+            this.socket.emit("kill", id);
             return { x: currentX, y: currentY };
           }
         }
@@ -101,11 +94,10 @@ export default class Player {
 
   tick(p, game) {
     this.doMovement(p, game);
-    if (!p.mouseClicked) {
+    if (!p.mouseClicked && this.me) {
       p.mouseClicked = () => {
-        if (this.hasShot) {
+        if (this.hasShot && !this.dead && this.me) {
           const endCoords = this.checkWallCollisionBullet(p);
-          console.log(endCoords);
           const angle = Math.atan2(endCoords.y - this.y, endCoords.x - this.x);
           this.shot = {
             x1: this.x + Math.cos(angle) * PLAYER_RADIUS,
