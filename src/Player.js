@@ -97,11 +97,10 @@ export default class Player {
     }
     pg.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
 
-    if (this.gotKill.alpha > 0.02) {
-      
-      this.gotKill.alpha -= 0.02;
-      this.gotKill.radius += 10; 
-      console.log(this.gotKill.radius + " " + this.gotKill.alpha);
+    if (this.gotKill.alpha > p.deltaTime / 150) {
+      this.gotKill.alpha -= p.deltaTime / 150;
+
+      this.gotKill.r += 15; 
       pg.stroke(
         `rgba(${this.colour.r}, ${this.colour.g}, ${this.colour.b}, ${this.gotKill.alpha})`
       );
