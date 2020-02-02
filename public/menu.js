@@ -3,11 +3,19 @@ let curColour = {r: 255, g: 255, b:255};
 window.onload = function() {
   stoppedTyping();
 
+  const opts = ['#ff0000', '#00ff00', '#0000ff'];
+
   var colorWheel = iro.ColorPicker("#colorWheelDemo", {
     sliderHeight: undefined,
+    color: opts[Math.floor(Math.random() * 3)],
   });
 
   colorWheel.on('color:change', (color) => {
+    curColour = iro.Color.hsvToRgb(color._value)
+    updateColor();
+  });
+
+  colorWheel.on('color:init', (color) => {
     curColour = iro.Color.hsvToRgb(color._value)
     updateColor();
   });
