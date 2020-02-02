@@ -69,9 +69,9 @@ export default class Game {
     const socket = io();
 
     await new Promise(resolve => {
-      let connections = Array(3);
+      let connections = Array(4);
       const check = () => {
-        if (connections[0] && connections[1] && connections[2]) {
+        if (connections[0] && connections[1] && connections[2] && connections[3]) {
           resolve();
         }
       };
@@ -99,6 +99,15 @@ export default class Game {
         connections[2] = true;
         check();
       });
+
+      socket.on("leaderboard", (leaderboard) => {
+        this.leaderboard = leaderboard.sort(function (a,b) {
+          return b.score - a.score;
+        });
+
+        connections[3] = true;
+        check();
+      })
     });
 
     socket.on("startingPos", ({ x, y }) => {
@@ -138,7 +147,6 @@ export default class Game {
         const currentPlayer = this.players[playerId];
 
         if (currentPlayer && currentPlayer.me) {
-          currentPlayer.colour = newPlayerData.colour;
           continue;
         }
 
@@ -176,16 +184,11 @@ export default class Game {
           newPlayerData.y * blockHeight,
           newPlayerData.username
         );
+        this.players[playerId].colour = newPlayerData.colour;
         this.players[playerId].iMap = this.map;
         this.players[playerId].allPlayers = this.players;
       }
     });
-
-    socket.on("leaderboard", (leaderboard) => {
-      this.leaderboard = leaderboard.sort(function (a,b) {
-        return b.score - a.score;
-      });
-    })
 
     socket.on("fire", ({ player, oldWidth, oldHeight }) => {
       const playerObj = this.players[player.id];
@@ -320,6 +323,8 @@ export default class Game {
       if ( i === 6) {
         break;
       }
+      if (!this.players[player.id]) continue;
+
       const colour = this.players[player.id].colour;
       if (colour) p.fill(`rgb(${colour.r}, ${colour.g}, ${colour.b})`);
       p.text(player.username + ": " + player.score, windowWidth - (windowWidth/40) * 4, windowWidth/40 + i*windowWidth/40);

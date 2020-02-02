@@ -88,8 +88,6 @@ setInterval(() => {
           io.sockets.connected[id].disconnect();
           delete players[id];
         }
-      } else {
-        console.log(id, Date.now() - players[id].lastReq);
       }
     }
   
@@ -195,7 +193,6 @@ io.on("connection", function(socket) {
   });
 
   socket.on("disconnect", data => {
-    console.log("Disconnect");
     delete players[socket.id];
     console.log(
       `Disconnection: ${Object.keys(players).length} players now connected.`
@@ -253,6 +250,8 @@ function gameCountdown() {
   for (const id in players) {
     onStart(id);
   }
+
+  io.emit("gameData", players);
 }
 
 function checkState() {
