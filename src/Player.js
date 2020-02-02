@@ -104,8 +104,8 @@ export default class Player {
       pg.stroke(
         `rgba(${this.colour.r}, ${this.colour.g}, ${this.colour.b}, ${this.gotKill.alpha})`
       );
-      pg.strokeWeight(10);
-      pg.ellipse(this.x, this.y, this.gotKill.radius*2);
+      pg.strokeWeight(0);
+      pg.ellipse(this.x, this.y, this.gotKill.r*2);
     } else {
       this.gotKill.alpha = 0;
     }
