@@ -82,7 +82,7 @@ let countdown = COUNTDOWN;
 setInterval(() => {
   if (state === State.Playing && Object.keys(players).length > 0) {
     for (const id in players) {
-      if (Date.now() - players[id].lastReq > 10000) {
+      if (Date.now() - players[id].lastReq > 200000) {
         if (!players[id].dead) {
           io.emit("dead", id);
           io.sockets.connected[id].disconnect();
@@ -138,17 +138,20 @@ io.on("connection", function(socket) {
   socket.on("move", data => {
     if (state !== State.Playing) return;
 
-    const { x, y } = data;
+    const { x, y, dx, dy} = data;
     const player = players[socket.id];
 
     if (!player) return;
+    if (!(dx === 0 && dy === 0)) {
+      player.lastReq = Date.now();
+    }
 
-    player.dx = x - player.x;
-    player.dy = y - player.y;
+    player.dx = dx;
+    player.dy = dy;
     player.x = x;
     player.y = y;
-    player.lastReq = Date.now();
 
+    io.emit("gameData", players);
     checkState();
   });
 
@@ -183,9 +186,11 @@ io.on("connection", function(socket) {
     player.username = username;
     player.colour = colour;
     leaderboard.push({
+      username,
       id: socket.id,
       score: 0,
     });
+    io.emit("leaderboard", leaderboard);
     io.emit("gameData", players);
   });
 
@@ -199,7 +204,6 @@ io.on("connection", function(socket) {
     checkState();
     leaderboard = leaderboard.filter((player) => player.id !== socket.id);
     io.emit("leaderboard", leaderboard);
-    console.log(`Disconnection: ${players.length} players now connected.`);
   });
 });
 
