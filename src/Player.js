@@ -116,7 +116,7 @@ export default class Player {
     this.doMovement(p, game);
     if (!p.mouseClicked && this.me) {
       p.mouseClicked = () => {
-        if (this.hasShot && !this.dead && this.me) {
+        if (this.shot.alpha === 0 && !this.dead && this.me) {
           const endCoords = this.checkWallCollisionBullet(p);
           const angle = Math.atan2(endCoords.y - this.y, endCoords.x - this.x);
           this.shot = {
