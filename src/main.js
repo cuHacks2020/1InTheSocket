@@ -24,4 +24,6 @@ async function main() {
   new p5(main);
 }
 
-main();
+if (window.location.pathname.includes('play')) {
+  main();
+}
