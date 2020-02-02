@@ -47,6 +47,7 @@ const blocks = [
 var map = generateMap();
 
 let players = {};
+let leaderboard = [];
 
 const PORT = process.env.PORT || 80;
 server.listen(PORT);
@@ -81,7 +82,7 @@ let countdown = COUNTDOWN;
 setInterval(() => {
   if (state === State.Playing && Object.keys(players).length > 0) {
     for (const id in players) {
-      if (Date.now() - players[id].lastReq > 10000) {
+      if (Date.now() - players[id].lastReq > 200000) {
         if (!players[id].dead) {
           io.emit("dead", id);
           io.sockets.connected[id].disconnect();
@@ -116,6 +117,8 @@ io.on("connection", function(socket) {
   console.log(
     `New connection: ${Object.keys(players).length} players now connected.`
   );
+  
+  io.emit("leaderboard", leaderboard);
 
   switch (state) {
     case State.Waiting:
@@ -135,17 +138,20 @@ io.on("connection", function(socket) {
   socket.on("move", data => {
     if (state !== State.Playing) return;
 
-    const { x, y } = data;
+    const { x, y, dx, dy} = data;
     const player = players[socket.id];
 
     if (!player) return;
+    if (!(dx === 0 && dy === 0)) {
+      player.lastReq = Date.now();
+    }
 
-    player.dx = x - player.x;
-    player.dy = y - player.y;
+    player.dx = dx;
+    player.dy = dy;
     player.x = x;
     player.y = y;
-    player.lastReq = Date.now();
 
+    io.emit("gameData", players);
     checkState();
   });
 
@@ -167,6 +173,9 @@ io.on("connection", function(socket) {
 
     io.emit("dead", id);
     const player = players[id];
+    let leaderPlayer = leaderboard.find((player) => player.id === socket.id);
+    leaderPlayer.score++;
+    io.emit("leaderboard", leaderboard);
     if (player) {
       player.dead = true;
     }
@@ -176,6 +185,12 @@ io.on("connection", function(socket) {
     const player = players[socket.id];
     player.username = username;
     player.colour = colour;
+    leaderboard.push({
+      username,
+      id: socket.id,
+      score: 0,
+    });
+    io.emit("leaderboard", leaderboard);
     io.emit("gameData", players);
   });
 
@@ -187,6 +202,8 @@ io.on("connection", function(socket) {
     );
 
     checkState();
+    leaderboard = leaderboard.filter((player) => player.id !== socket.id);
+    io.emit("leaderboard", leaderboard);
   });
 });
 

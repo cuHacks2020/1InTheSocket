@@ -17,7 +17,15 @@ export default class Game {
     this.state = State.Waiting;
     this.countdown = 0;
 
-    this.checkWallCollisionPlayer = (x, y, r, windowWidth, windowHeight) => {
+    this.leaderboard = [];
+
+    this.checkWallCollisionPlayer = (
+      x,
+      y,
+      r,
+      windowWidth,
+      windowHeight
+    ) => {
       if (!this.map) return;
 
       let playerXRight = x + r;
@@ -173,6 +181,12 @@ export default class Game {
       }
     });
 
+    socket.on("leaderboard", (leaderboard) => {
+      this.leaderboard = leaderboard.sort(function (a,b) {
+        return b.score - a.score;
+      });
+    })
+
     socket.on("fire", ({ player, oldWidth, oldHeight }) => {
       const playerObj = this.players[player.id];
 
@@ -252,12 +266,12 @@ export default class Game {
         portWidth,
         portHeight
       );
-
-      return;
+    } else {
+      p.image(pg, 0, 0, windowWidth, windowHeight);
+      this.drawGameState(p);
     }
 
-    p.image(pg, 0, 0, windowWidth, windowHeight);
-    this.drawGameState(p);
+    this.drawLeaderboard(p, window.innerWidth, window.innerHeight)
   }
 
   drawGameState(p) {
@@ -292,5 +306,25 @@ export default class Game {
         );
         break;
     }
+  }
+  
+  drawLeaderboard(p, windowWidth, windowHeight) {
+    p.fill(100,255,127,50);
+    p.rect(windowWidth - windowWidth/5 - 20, 0, windowWidth/5 + 20, windowHeight/3)
+    p.textSize(windowWidth/40);
+    p.fill(0,0,0,175);
+    p.text('Leaderboard', windowWidth - (windowWidth/40) * 4, windowWidth/40);
+    p.textSize(windowWidth/60);
+    let i = 1;
+    for (let player of this.leaderboard) {
+      if ( i === 6) {
+        break;
+      }
+      const colour = this.players[player.id].colour;
+      if (colour) p.fill(`rgb(${colour.r}, ${colour.g}, ${colour.b})`);
+      p.text(player.username + ": " + player.score, windowWidth - (windowWidth/40) * 4, windowWidth/40 + i*windowWidth/40);
+      i++;
+    }
+    
   }
 }
