@@ -169,6 +169,7 @@ io.on("connection", function(socket) {
 
   socket.on("kill", id => {
     if (state !== State.Playing) return;
+    if (players[socket.id].dead) return;
 
     io.emit("dead", id);
     const player = players[id];
@@ -232,6 +233,8 @@ function startGameCountdown() {
   }
 
   io.emit("gameData", players);
+  map = generateMap();
+  io.emit("map", map);
 
   countdown = COUNTDOWN;
   state = State.Starting;
@@ -267,9 +270,14 @@ function checkState() {
     state = State.Waiting;
     if (live === 1) {
       displayWinner = true;
+      const winner = players[Object.keys(players).find(key => players[key].dead === false)];
+
+      let leaderPlayer = leaderboard.find(({id}) => id === winner.id);
+      leaderPlayer.score += Object.keys(players).length;
+      io.emit("leaderboard", leaderboard);
       io.emit(
         "winner",
-        players[Object.keys(players).find(key => players[key].dead === false)]
+        winner
       );
     }
 
@@ -279,7 +287,7 @@ function checkState() {
       }
       displayWinner = false;
       io.emit("state", state);
-    }, 5000);
+    }, 4000);
   }
 }
 
