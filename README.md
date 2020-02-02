@@ -1,4 +1,4 @@
-# sockets suck
+# One in the Socket
 
 ## Getting started
 
