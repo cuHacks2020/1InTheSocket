@@ -68,7 +68,7 @@ export default class Player {
               PLAYER_RADIUS
           ) {
             this.socket.emit("kill", id);
-            this.gotKill = {r: PLAYER_RADIUS, alpha = 1 };
+            this.gotKill = {r: PLAYER_RADIUS, alpha: 1 };
             return { x: currentX, y: currentY };
           }
         }
