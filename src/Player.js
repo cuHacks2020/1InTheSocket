@@ -15,7 +15,7 @@ export default class Player {
     this.lastMovement = { horizontal: 0, vertical: 0 };
     this.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
     this.hasShot = true;
-    this.gotKill = { r: PLAYER_RADIUS, alpha: 0};
+    this.gotKill = { r: 0, alpha: 0};
     const urlParams = new URLSearchParams(window.location.search);
     this.username = urlParams.get("user");
     this.colour = {r: parseInt(urlParams.get("r")), g: parseInt(urlParams.get("g")), b: parseInt(urlParams.get("b"))};
@@ -68,7 +68,7 @@ export default class Player {
               PLAYER_RADIUS
           ) {
             this.socket.emit("kill", id);
-            this.gotKill.alpha = 1;
+            this.gotKill = {r: PLAYER_RADIUS, alpha = 1 };
             return { x: currentX, y: currentY };
           }
         }

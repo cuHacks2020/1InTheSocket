@@ -120,6 +120,8 @@ export default class Game {
         if (player.me) {
           player.x = x * blockWidth;
           player.y = y * blockHeight;
+          player.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0};
+          player.gotKill = {r: 0, alpha: 0};
           break;
         }
 
