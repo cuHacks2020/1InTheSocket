@@ -5,19 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <link rel="stylesheet" href="css/index.css" />
+    <script src="assets/iro.min.js"></script>
 
     <title>One In The Socket</title>
   </head>
   <body class="text">
     <div class="container">
-      <h1 style="font-family:Comic Sans MS">
+      <h1>
         One In The Socket
       </h1>
       <form>
         <div class="form">
-          Username: <input id="username" onkeyup="stoppedTyping()" />
+          <input type="text" maxlength=15 placeholder="Enter Username..." id="username" onkeyup="stoppedTyping()" />
           <br />
-          Colour: <input type="color" id="colour" onchange="selectColour()" />
+          <div class="wheel" id="colorWheelDemo"></div>
           <br />
         </div>
       </form>

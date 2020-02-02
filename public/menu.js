@@ -1,11 +1,32 @@
+let curColour = {r: 255, g: 255, b:255};
+
 window.onload = function() {
   stoppedTyping();
+
+  var colorWheel = iro.ColorPicker("#colorWheelDemo", {
+    sliderHeight: undefined,
+  });
+
+  colorWheel.on('color:change', (color) => {
+    curColour = iro.Color.hsvToRgb(color._value)
+    updateColor();
+  });
+
+  updateColor();
+
+  function updateColor(){
+    const {r,g,b} = curColour;
+    const rgb = `rgb(${r},${g},${b})`;
+
+    document.querySelector('#username').style.borderBottomColor = rgb;
+
+  }
 };
 
 function joinGame() {
   const username = document.getElementById("username").value;
-  const colour = document.getElementById("colour").value;
-  const data = `?user=${username}&colour=${colour}`;
+  const {r,g,b} = curColour;
+  const data = `?user=${username}&r=${r}&g=${g}&b=${b}`;
   window.location.href = window.location.href + "play" + data;
 }
 

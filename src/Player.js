@@ -5,15 +5,6 @@ const speed_v = SPEED * blockHeight;
 const speed_h = SPEED * blockWidth;
 const PLAYER_RADIUS = window.innerWidth / 100;
 
-function convertHex(hash) {
-  const hex = hash.replace("#", "");
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-
-  return { r, g, b };
-}
-
 export default class Player {
   constructor(socket = null, socketId = null, x = 0, y = 0, username = "") {
     this.x = x;
@@ -26,10 +17,8 @@ export default class Player {
     this.hasShot = true;
     this.gotKill = { r: PLAYER_RADIUS, alpha: 0};
     const urlParams = new URLSearchParams(window.location.search);
-    this.colour = window.location.hash
-      ? convertHex(window.location.hash)
-      : { r: 0, g: 0, b: 255 };
     this.username = urlParams.get("user");
+    this.colour = {r: parseInt(urlParams.get("r")), g: parseInt(urlParams.get("g")), b: parseInt(urlParams.get("b"))};
 
     if (socket) {
       socket.emit("join", { username: this.username, colour: this.colour });
