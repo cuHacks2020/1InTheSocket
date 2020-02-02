@@ -23,7 +23,9 @@ async function main() {
 
   new p5(main);
 }
-
+ 
 if (window.location.pathname.includes('play')) {
   main();
 }
+
+window.onresize = function(){ window.location.replace('/'); }

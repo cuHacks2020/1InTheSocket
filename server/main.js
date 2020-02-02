@@ -88,7 +88,7 @@ setInterval(() => {
           io.emit("dead", id);
           io.sockets.connected[id].disconnect();
           delete players[id];
-          this.leaderboard = this.leaderboard.filter((player) => id !== player.id);
+          leaderboard = leaderboard.filter((player) => id !== player.id);
         }
       }
     }
