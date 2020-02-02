@@ -32,10 +32,13 @@ window.onload = function() {
 };
 
 function joinGame() {
+  console.log("Javascript");
   const username = document.getElementById("username").value;
   const {r,g,b} = curColour;
   const data = `?user=${username}&r=${r.toFixed(2)}&g=${g.toFixed(2)}&b=${b.toFixed(2)}`;
   window.location.href = window.location.href + "play" + data;
+
+  return false;
 }
 
 function stoppedTyping() {

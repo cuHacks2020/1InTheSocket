@@ -14,24 +14,22 @@
       <h1>
         One In The Socket
       </h1>
-      <form>
-        <div class="form">
-          <input type="text" maxlength=15 placeholder="Enter Username..." id="username" onkeyup="stoppedTyping()" />
-          <br />
-          <div class="wheel" id="colorWheelDemo"></div>
-          <br />
+      <form onsubmit="return joinGame();">
+        <input type="text" maxlength=15 placeholder="Enter Username..." id="username" onkeyup="stoppedTyping()" />
+        <br />
+        <div class="wheel" id="colorWheelDemo"></div>
+        <br />
+        <div style="text-align:center">
+          <button
+            type="submit"
+            class="button notransition"
+            id="joinButton"
+            disabled
+          >
+            Join Game
+          </button>
         </div>
       </form>
-      <div style="text-align:center">
-        <button
-          onclick="joinGame()"
-          class="button notransition"
-          id="joinButton"
-          disabled
-        >
-          Join Game
-        </button>
-      </div>
     </div>
     <script src="menu.js"></script>
   </body>
