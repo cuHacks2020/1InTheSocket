@@ -19,13 +19,7 @@ export default class Game {
 
     this.leaderboard = [];
 
-    this.checkWallCollisionPlayer = (
-      x,
-      y,
-      r,
-      windowWidth,
-      windowHeight
-    ) => {
+    this.checkWallCollisionPlayer = (x, y, r, windowWidth, windowHeight) => {
       if (!this.map) return;
 
       let playerXRight = x + r;
@@ -71,7 +65,12 @@ export default class Game {
     await new Promise(resolve => {
       let connections = Array(4);
       const check = () => {
-        if (connections[0] && connections[1] && connections[2] && connections[3]) {
+        if (
+          connections[0] &&
+          connections[1] &&
+          connections[2] &&
+          connections[3]
+        ) {
           resolve();
         }
       };
@@ -92,6 +91,8 @@ export default class Game {
 
       socket.on("state", (state, countdown) => {
         this.state = state;
+        this.winner = undefined;
+
         if (countdown) {
           this.countdown = countdown;
         }
@@ -100,14 +101,14 @@ export default class Game {
         check();
       });
 
-      socket.on("leaderboard", (leaderboard) => {
-        this.leaderboard = leaderboard.sort(function (a,b) {
+      socket.on("leaderboard", leaderboard => {
+        this.leaderboard = leaderboard.sort(function(a, b) {
           return b.score - a.score;
         });
 
         connections[3] = true;
         check();
-      })
+      });
     });
 
     socket.on("startingPos", ({ x, y }) => {
@@ -203,9 +204,12 @@ export default class Game {
     });
 
     socket.on("disconnect", () => {
-      alert('Disconnected for being idle.');
-    })
+      alert("Disconnected for being idle.");
+    });
 
+    socket.on("winner", player => {
+      this.winner = player;
+    });
     return socket;
   }
 
@@ -271,10 +275,9 @@ export default class Game {
       );
     } else {
       p.image(pg, 0, 0, windowWidth, windowHeight);
-      this.drawGameState(p);
     }
-
-    this.drawLeaderboard(p, window.innerWidth, window.innerHeight)
+    this.drawGameState(p);
+    this.drawLeaderboard(p, window.innerWidth, window.innerHeight);
   }
 
   drawGameState(p) {
@@ -309,27 +312,50 @@ export default class Game {
         );
         break;
     }
+
+    if (!this.winner) return;
+    p.textSize(120);
+    p.fill(
+      `rgba(${this.winner.colour.r}, ${this.winner.colour.g}, ${this.winner.colour.b}, 0.9)`
+    );
+    p.text(
+      `${this.winner.username} wins!`,
+      window.innerWidth / 2,
+      window.innerHeight / 2 - 130
+    );
   }
-  
+
   drawLeaderboard(p, windowWidth, windowHeight) {
-    p.fill(100,255,127,50);
-    p.rect(windowWidth - windowWidth/5 - 20, 0, windowWidth/5 + 20, windowHeight/3)
-    p.textSize(windowWidth/40);
-    p.fill(0,0,0,175);
-    p.text('Leaderboard', windowWidth - (windowWidth/40) * 4, windowWidth/40);
-    p.textSize(windowWidth/60);
+    p.fill(100, 255, 127, 50);
+    p.rect(
+      windowWidth - windowWidth / 5 - 20,
+      0,
+      windowWidth / 5 + 20,
+      windowHeight / 3
+    );
+    p.textSize(windowWidth / 40);
+    p.fill(0, 0, 0, 175);
+    p.text(
+      "Leaderboard",
+      windowWidth - (windowWidth / 40) * 4,
+      windowWidth / 40
+    );
+    p.textSize(windowWidth / 60);
     let i = 1;
     for (let player of this.leaderboard) {
-      if ( i === 6) {
+      if (i === 6) {
         break;
       }
       if (!this.players[player.id]) continue;
 
       const colour = this.players[player.id].colour;
       if (colour) p.fill(`rgb(${colour.r}, ${colour.g}, ${colour.b})`);
-      p.text(player.username + ": " + player.score, windowWidth - (windowWidth/40) * 4, windowWidth/40 + i*windowWidth/40);
+      p.text(
+        player.username + ": " + player.score,
+        windowWidth - (windowWidth / 40) * 4,
+        windowWidth / 40 + (i * windowWidth) / 40
+      );
       i++;
     }
-    
   }
 }

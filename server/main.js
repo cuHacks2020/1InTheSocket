@@ -48,6 +48,7 @@ var map = generateMap();
 
 let players = {};
 let leaderboard = [];
+let displayWinner = false;
 
 const PORT = process.env.PORT || 80;
 server.listen(PORT);
@@ -90,11 +91,11 @@ setInterval(() => {
         }
       }
     }
-  
+
     checkState();
     io.emit("gameData", players);
   }
-}, 3000)
+}, 3000);
 
 io.on("connection", function(socket) {
   socket.emit("map", map);
@@ -115,7 +116,7 @@ io.on("connection", function(socket) {
   console.log(
     `New connection: ${Object.keys(players).length} players now connected.`
   );
-  
+
   io.emit("leaderboard", leaderboard);
 
   switch (state) {
@@ -136,7 +137,7 @@ io.on("connection", function(socket) {
   socket.on("move", data => {
     if (state !== State.Playing) return;
 
-    const { x, y, dx, dy} = data;
+    const { x, y, dx, dy } = data;
     const player = players[socket.id];
 
     if (!player) return;
@@ -171,7 +172,7 @@ io.on("connection", function(socket) {
 
     io.emit("dead", id);
     const player = players[id];
-    let leaderPlayer = leaderboard.find((player) => player.id === socket.id);
+    let leaderPlayer = leaderboard.find(player => player.id === socket.id);
     leaderPlayer.score++;
     io.emit("leaderboard", leaderboard);
     if (player) {
@@ -186,7 +187,7 @@ io.on("connection", function(socket) {
     leaderboard.push({
       username,
       id: socket.id,
-      score: 0,
+      score: 0
     });
     io.emit("leaderboard", leaderboard);
     io.emit("gameData", players);
@@ -199,7 +200,7 @@ io.on("connection", function(socket) {
     );
 
     checkState();
-    leaderboard = leaderboard.filter((player) => player.id !== socket.id);
+    leaderboard = leaderboard.filter(player => player.id !== socket.id);
     io.emit("leaderboard", leaderboard);
   });
 });
@@ -216,6 +217,7 @@ function onStart(id) {
   y = y + 0.5;
 
   players[id].lastReq = Date.now();
+  players[id].shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
 
   io.to(`${id}`).emit("startingPos", { x, y });
 }
@@ -255,6 +257,7 @@ function gameCountdown() {
 }
 
 function checkState() {
+  if (displayWinner) return;
   let live = 0;
   for (const [_, player] of Object.entries(players)) {
     if (!player.dead) live++;
@@ -262,11 +265,21 @@ function checkState() {
 
   if (live <= 1) {
     state = State.Waiting;
-    if (Object.keys(players).length > 1) {
-      startGameCountdown();
+    if (live === 1) {
+      displayWinner = true;
+      io.emit(
+        "winner",
+        players[Object.keys(players).find(key => players[key].dead === false)]
+      );
     }
 
-    io.emit("state", state);
+    setTimeout(() => {
+      if (Object.keys(players).length > 1) {
+        startGameCountdown();
+      }
+      displayWinner = false;
+      io.emit("state", state);
+    }, 5000);
   }
 }
 
