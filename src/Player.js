@@ -24,6 +24,7 @@ export default class Player {
     this.lastMovement = { horizontal: 0, vertical: 0 };
     this.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
     this.hasShot = true;
+    this.gotKill = { r: PLAYER_RADIUS, alpha: 0};
     const urlParams = new URLSearchParams(window.location.search);
     this.colour = window.location.hash
       ? convertHex(window.location.hash)
@@ -78,6 +79,7 @@ export default class Player {
               PLAYER_RADIUS
           ) {
             this.socket.emit("kill", id);
+            this.gotKill.alpha = 1;
             return { x: currentX, y: currentY };
           }
         }
@@ -105,6 +107,20 @@ export default class Player {
       this.shot.alpha = 0;
     }
     pg.line(this.shot.x1, this.shot.y1, this.shot.x2, this.shot.y2);
+
+    if (this.gotKill.alpha > 0.02) {
+      
+      this.gotKill.alpha -= 0.02;
+      this.gotKill.radius += 10; 
+      console.log(this.gotKill.radius + " " + this.gotKill.alpha);
+      pg.stroke(
+        `rgba(${this.colour.r}, ${this.colour.g}, ${this.colour.b}, ${this.gotKill.alpha})`
+      );
+      pg.strokeWeight(10);
+      pg.ellipse(this.x, this.y, this.gotKill.radius*2);
+    } else {
+      this.gotKill.alpha = 0;
+    }
     pg.alpha = 1;
   }
 
