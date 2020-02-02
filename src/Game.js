@@ -16,6 +16,7 @@ export default class Game {
     this.me = null;
     this.state = State.Waiting;
     this.countdown = 0;
+    this.numPlayers = 1;
 
     this.leaderboard = [];
 
@@ -216,6 +217,11 @@ export default class Game {
     socket.on("winner", player => {
       this.winner = player;
     });
+
+    socket.on("playersLeft", numPlayers => {
+      this.numPlayers = numPlayers;
+    });
+
     return socket;
   }
 
@@ -284,6 +290,8 @@ export default class Game {
     }
     this.drawGameState(p);
     this.drawLeaderboard(p, window.innerWidth, window.innerHeight);
+    if (this.state === State.Spectating || this.state === State.Playing)
+      this.drawPlayersLeft(p, this.numPlayers);
   }
 
   drawGameState(p) {
@@ -363,5 +371,12 @@ export default class Game {
       );
       i++;
     }
+  }
+
+  drawPlayersLeft(p, numPlayers) {
+    p.fill("rgb(255, 255, 255)");
+    p.textSize(window.innerWidth / 60);
+    p.textAlign(p.LEFT);
+    p.text(`Players Left: ${numPlayers - 1}`, 0, p.textAscent());
   }
 }
