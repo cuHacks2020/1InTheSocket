@@ -82,6 +82,10 @@ export default class Game {
 
       socket.on("map", (mapObject, x, y) => {
         this.map = mapObject;
+        if (this.me) {
+          this.me.iMap = mapObject;
+        }
+        
         this.x = x;
         this.y = y;
 

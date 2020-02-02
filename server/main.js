@@ -217,6 +217,8 @@ function onStart(id) {
   x = x + 0.5;
   y = y + 0.5;
 
+  players[id].x = x;
+  players[id].y = y;
   players[id].lastReq = Date.now();
   players[id].shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
 
