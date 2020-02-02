@@ -101,7 +101,6 @@ export default class Player {
       this.gotKill.alpha -= p.deltaTime / 150;
 
       this.gotKill.r += 15; 
-      console.log(this.gotKill.r + " " + this.gotKill.alpha);
       pg.stroke(
         `rgba(${this.colour.r}, ${this.colour.g}, ${this.colour.b}, ${this.gotKill.alpha})`
       );
