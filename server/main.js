@@ -193,6 +193,7 @@ io.on("connection", function(socket) {
       score: 0
     });
     io.emit("leaderboard", leaderboard);
+    io.emit("playerData", { username: username, colour: colour, score: 0 });
     io.emit("gameData", players);
   });
 
