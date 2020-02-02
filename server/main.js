@@ -82,7 +82,7 @@ let countdown = COUNTDOWN;
 setInterval(() => {
   if (state === State.Playing && Object.keys(players).length > 0) {
     for (const id in players) {
-      if (Date.now() - players[id].lastReq > 200000) {
+      if (Date.now() - players[id].lastReq > 10000) {
         if (!players[id].dead) {
           io.emit("dead", id);
           io.sockets.connected[id].disconnect();
