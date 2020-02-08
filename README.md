@@ -1,4 +1,5 @@
 # One in the Socket
+![image](https://i.imgur.com/sJTNwT4.gif)
 
 ## Getting started
 
