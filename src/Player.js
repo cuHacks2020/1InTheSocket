@@ -15,10 +15,14 @@ export default class Player {
     this.lastMovement = { horizontal: 0, vertical: 0 };
     this.shot = { x1: 0, x2: 100, y1: 0, y2: 100, alpha: 0 };
     this.hasShot = true;
-    this.gotKill = { r: 0, alpha: 0};
+    this.gotKill = { r: 0, alpha: 0 };
     const urlParams = new URLSearchParams(window.location.search);
     this.username = urlParams.get("user");
-    this.colour = {r: parseInt(urlParams.get("r")), g: parseInt(urlParams.get("g")), b: parseInt(urlParams.get("b"))};
+    this.colour = {
+      r: parseInt(urlParams.get("r")),
+      g: parseInt(urlParams.get("g")),
+      b: parseInt(urlParams.get("b"))
+    };
 
     if (socket) {
       socket.emit("join", { username: this.username, colour: this.colour });
@@ -68,7 +72,7 @@ export default class Player {
               PLAYER_RADIUS
           ) {
             this.socket.emit("kill", id);
-            this.gotKill = {r: PLAYER_RADIUS, alpha: 1 };
+            this.gotKill = { r: PLAYER_RADIUS, alpha: 1 };
             return { x: currentX, y: currentY };
           }
         }
@@ -100,12 +104,12 @@ export default class Player {
     if (this.gotKill.alpha > p.deltaTime / 150) {
       this.gotKill.alpha -= p.deltaTime / 150;
 
-      this.gotKill.r += 15; 
+      this.gotKill.r += 15;
       pg.stroke(
         `rgba(${this.colour.r}, ${this.colour.g}, ${this.colour.b}, ${this.gotKill.alpha})`
       );
       pg.strokeWeight(0);
-      pg.ellipse(this.x, this.y, this.gotKill.r*2);
+      pg.ellipse(this.x, this.y, this.gotKill.r * 2);
     } else {
       this.gotKill.alpha = 0;
     }
@@ -167,7 +171,7 @@ export default class Player {
         x: this.x / blockWidth,
         y: this.y / blockHeight,
         dx: horizontal,
-        dy: vertical,
+        dy: vertical
       });
     }
   }

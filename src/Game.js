@@ -16,6 +16,7 @@ export default class Game {
     this.me = null;
     this.state = State.Waiting;
     this.countdown = 0;
+    this.numPlayers = 1;
 
     this.leaderboard = [];
 
@@ -85,7 +86,7 @@ export default class Game {
         if (this.me) {
           this.me.iMap = mapObject;
         }
-        
+
         this.x = x;
         this.y = y;
 
@@ -216,6 +217,11 @@ export default class Game {
     socket.on("winner", player => {
       this.winner = player;
     });
+
+    socket.on("playersLeft", numPlayers => {
+      this.numPlayers = numPlayers;
+    });
+
     return socket;
   }
 
@@ -284,6 +290,16 @@ export default class Game {
     }
     this.drawGameState(p);
     this.drawLeaderboard(p, window.innerWidth, window.innerHeight);
+    const playerScore = this.leaderboard.find(
+      player => player.id === this.me.id
+    ).score;
+    this.drawPlayerData(p, {
+      username: this.me.username,
+      colour: this.me.colour,
+      score: playerScore
+    });
+    if (this.state === State.Spectating || this.state === State.Playing)
+      this.drawPlayersLeft(p, this.numPlayers);
   }
 
   drawGameState(p) {
@@ -363,5 +379,27 @@ export default class Game {
       );
       i++;
     }
+  }
+
+  drawPlayersLeft(p, numPlayers) {
+    p.fill("rgb(255, 255, 255)");
+    p.textSize(window.innerWidth / 70);
+    p.textAlign(p.LEFT);
+    p.text(
+      `Players Left: ${numPlayers - 1}`,
+      window.innerWidth - p.textWidth(p),
+      window.innerHeight - (p.textAscent() + p.textDescent()) / 2
+    );
+  }
+
+  drawPlayerData(p, { username, colour, score }) {
+    p.fill(`rgb(${colour.r}, ${colour.g}, ${colour.b})`);
+    p.textSize(window.innerWidth / 70);
+    p.textAlign(p.LEFT);
+    p.text(
+      `${username}: ${score}`,
+      0,
+      window.innerHeight - (p.textAscent() + p.textDescent()) / 2
+    );
   }
 }

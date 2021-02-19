@@ -177,6 +177,7 @@ io.on("connection", function(socket) {
     let leaderPlayer = leaderboard.find(player => player.id === socket.id);
     leaderPlayer.score++;
     io.emit("leaderboard", leaderboard);
+    checkState();
     if (player) {
       player.dead = true;
     }
@@ -192,6 +193,7 @@ io.on("connection", function(socket) {
       score: 0
     });
     io.emit("leaderboard", leaderboard);
+    io.emit("playerData", { username: username, colour: colour, score: 0 });
     io.emit("gameData", players);
   });
 
@@ -269,19 +271,19 @@ function checkState() {
     if (!player.dead) live++;
   }
 
+  io.emit("playersLeft", live);
+
   if (live <= 1) {
     state = State.Waiting;
     if (live === 1) {
       displayWinner = true;
-      const winner = players[Object.keys(players).find(key => players[key].dead === false)];
+      const winner =
+        players[Object.keys(players).find(key => players[key].dead === false)];
 
-      let leaderPlayer = leaderboard.find(({id}) => id === winner.id);
-      leaderPlayer.score += Object.keys(players).length;
+      let leaderPlayer = leaderboard.find(({ id }) => id === winner.id);
+      if (leaderPlayer) leaderPlayer.score += Object.keys(players).length;
       io.emit("leaderboard", leaderboard);
-      io.emit(
-        "winner",
-        winner
-      );
+      io.emit("winner", winner);
     }
 
     setTimeout(() => {
